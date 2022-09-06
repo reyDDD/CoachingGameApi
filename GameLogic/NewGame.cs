@@ -21,15 +21,11 @@ namespace TamboliyaApi.GameLogic
             this.Oracle = oracle;
         }
 
+ 
 
-        public void Start(string userQuestion)
+        public async Task GetOracle(string userQuestion)
         {
-            GetOracle(userQuestion);
-        }
-
-        private void GetOracle(string userQuestion)
-        {
-            Oracle.Start(userQuestion);
+            await Oracle.Start(userQuestion);
         }
     }
 }
