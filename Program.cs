@@ -1,6 +1,8 @@
 using Microsoft.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using TamboliyaApi.GameLogic.Models;
+using TamboliyaApi.GameLogic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,9 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
 });
+
+builder.Services.AddScoped<Dodecahedron>();
+builder.Services.AddScoped<Oracle>();
 
 var app = builder.Build();
 

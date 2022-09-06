@@ -25,6 +25,6 @@ namespace TamboliyaApi.Data
             }
         }
 
-        public DodecahedronColor Color { get; init; }
+        public Color Color { get; init; }
     }
 }

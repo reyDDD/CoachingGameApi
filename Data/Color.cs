@@ -1,6 +1,6 @@
 ﻿namespace TamboliyaApi.Data
 {
-    public enum DodecahedronColor
+    public enum Color
     {
         NotSet = 0,
         Blue = 1,
