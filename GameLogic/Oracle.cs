@@ -6,19 +6,6 @@ namespace TamboliyaApi.GameLogic
 {
     public class Oracle
     {
-        private const string motivePath = "Cards/Motive.txt";
-        private const string qualityOfExperiencePath = "Cards/QualityOfExperience.txt";
-        private const string environmentAndCircumstancesPath = "Cards/EnvironmentAndCircumstances.txt";
-        private const string chainLinksPath = "Cards/ChainLinks.txt";
-        private const string exitPath = "Cards/ExitPath.txt";
-
-        private const string mapEmbodimentPath = "Cards/Map_Embodiment.txt";
-        private const string mapDelusionPath = "Cards/Map_Delusion.txt";
-        private const string mapOrganizationalPath = "Cards/Map_OrganizationalPath.txt";
-        private const string mapInnerHomePath = "Cards/Map_PathInnerHome.txt";
-        private const string mapPersonalPath = "Cards/Map_PersonalPath.txt";
-        private const string mapMysticalPath = "Cards/Map_MysticalPath.txt";
-
         private readonly Dodecahedron dodecahedron;
 
         public string Question { get; private set; } = null!;
@@ -26,7 +13,7 @@ namespace TamboliyaApi.GameLogic
         public string QualityOfExperience { get; private set; } = null!;
         public string EnvironmentAndCircumstances { get; private set; } = null!;
         public string ChainLinks { get; private set; } = null!;
-        public string ExitPath { get; private set; }
+        public string ExitPath { get; private set; } = null!;
         public int StepOnPath { get; private set; }
 
 
@@ -41,11 +28,11 @@ namespace TamboliyaApi.GameLogic
 
             Task[] tasks = new Task[5];
 
-            Task<(string Prophecy, Color Color)> Step1 = Task.Run(async () => await StepWithColor(motivePath));
-            Task<(string Prophecy, int Number)> Step2 = Task.Run(async () => await StepWithNumber(qualityOfExperiencePath));
-            Task<(string Prophecy, int Number)> Step3 = Task.Run(async () => await StepWithNumber(environmentAndCircumstancesPath, true));
-            Task<(string Prophecy, int Number)> Step4 = Task.Run(async () => await StepWithNumber(chainLinksPath));
-            Task<(string Prophecy, Color Color)> Step5 = Task.Run(async () => await StepWithColor(exitPath));
+            Task<(string Prophecy, Color Color)> Step1 = Task.Run(async () => await StepWithColor(GamePathes.motivePath));
+            Task<(string Prophecy, int Number)> Step2 = Task.Run(async () => await StepWithNumber(GamePathes.qualityOfExperiencePath));
+            Task<(string Prophecy, int Number)> Step3 = Task.Run(async () => await StepWithNumber(GamePathes.environmentAndCircumstancesPath, true));
+            Task<(string Prophecy, int Number)> Step4 = Task.Run(async () => await StepWithNumber(GamePathes.chainLinksPath));
+            Task<(string Prophecy, Color Color)> Step5 = Task.Run(async () => await StepWithColor(GamePathes.exitPath));
 
             tasks[0] = Step1;
             tasks[1] = Step2;
@@ -67,10 +54,10 @@ namespace TamboliyaApi.GameLogic
         {
             int position = color switch
             {
-                Color.Red => (await StepWithNumber(mapOrganizationalPath)).Number,
-                Color.Blue => (await StepWithNumber(mapMysticalPath)).Number,
-                Color.Green => (await StepWithNumber(mapInnerHomePath)).Number,
-                Color.Yellow => (await StepWithNumber(mapPersonalPath)).Number,
+                Color.Red => (await StepWithNumber(GamePathes.mapOrganizationalPath)).Number,
+                Color.Blue => (await StepWithNumber(GamePathes.mapMysticalPath)).Number,
+                Color.Green => (await StepWithNumber(GamePathes.mapInnerHomePath)).Number,
+                Color.Yellow => (await StepWithNumber(GamePathes.mapPersonalPath)).Number,
                 _  => throw new ArgumentException("Color from dodecahedron not get")
             };
 
@@ -104,13 +91,29 @@ namespace TamboliyaApi.GameLogic
             {
                 if (position.Number == 7)
                 {
-                    pathToValue = mapEmbodimentPath;
+                    pathToValue = GamePathes.mapEmbodimentPath;
                 }
                 else if (position.Number == 8)
                 {
-                    pathToValue = mapDelusionPath;
+                    pathToValue = GamePathes.mapDelusionPath;
                 }
             }
+
+            var path = Path.Combine(rootFolder, pathToValue);
+            var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
+            string prophecy = prophecies.Where(m => m.StartsWith(position.Number.ToString() + " —")).First();
+
+
+            var pattern = new Regex(@"^\d{1,2}\s");
+            int positionNumber = Convert.ToInt32(pattern.Match(prophecy).Value);
+            return (prophecy, positionNumber);
+        }
+
+        public static async Task<(string Prophecy, int Number)> StepWithNumber(string pathToValue,
+            Dodecahedron dodecahedron)
+        {
+            var position = dodecahedron.ThrowBone();
+            var rootFolder = Directory.GetCurrentDirectory();
 
             var path = Path.Combine(rootFolder, pathToValue);
             var prophecies = (await File.ReadAllLinesAsync(path)).ToList();

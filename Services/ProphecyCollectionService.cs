@@ -13,7 +13,7 @@ namespace TamboliyaApi.Services
         {
             Color = color;
         }
-        public string GetProphecy()
+        public async Task<string> GetProphecyAsync()
         {
             if (Color == Color.NotSet)
             {
@@ -23,12 +23,14 @@ namespace TamboliyaApi.Services
             if (Prophecies.Count() == 0)
             {
                 var rootFolder = Directory.GetCurrentDirectory();
-                Prophecies = File.ReadAllLines(Path.Combine(rootFolder, "Cards", @$"{Color}.txt")).ToList();
+                Prophecies = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, "Cards", @$"{Color}.txt"))).ToList();
             }
 
             var random = new Random();
             var index = random.Next(0, Prophecies.Count());
-            return Prophecies[index];
+            var prophecy = Prophecies[index];
+            Prophecies.RemoveAt(index);
+            return prophecy;
         }
 
         public static ProphecyCollectionService Create(Color color) => new ProphecyCollectionService(color);
