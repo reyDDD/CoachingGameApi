@@ -1,4 +1,5 @@
-﻿using TamboliyaApi.Data;
+﻿using Microsoft.IdentityModel.Tokens;
+using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
 
@@ -14,7 +15,7 @@ namespace TamboliyaApi.GameLogic
         public Oracle Oracle { get; init; }
         public RegionOnMap RegionOnMap { get; set; }
         public ChooseRandomActionService chooseRandomAction { get; set; }
-        public NewMoveService newMoveService { get; set; }
+        public NewMoveService NewMoveService { get; set; }
         public ActualPositionOnMap ActualPosition { get; set; } = null!;
         public Queue<string> PromptMessages { get; set; } = new Queue<string>();
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
@@ -28,9 +29,9 @@ namespace TamboliyaApi.GameLogic
             GreenProphecies = ProphecyCollectionService.Create(Color.Green);
             BlueProphecies = ProphecyCollectionService.Create(Color.Blue);
             YellowProphecies = ProphecyCollectionService.Create(Color.Yellow);
-            this.Oracle = oracle;
+            Oracle = oracle;
             chooseRandomAction = chooseRandomActionService;
-            this.newMoveService = newMoveService;
+            NewMoveService = newMoveService;
         }
 
 
@@ -42,7 +43,7 @@ namespace TamboliyaApi.GameLogic
 
         public async Task GoToNewStage()
         {
-            ActualPosition = await newMoveService.MakeMoveAsync(ActualPosition, this);
+            ActualPosition = await NewMoveService.MakeMoveAsync(ActualPosition, this);
         }
 
         public async Task ChooseRandomAction()
@@ -52,7 +53,7 @@ namespace TamboliyaApi.GameLogic
 
         public async Task ChooseRandomCard()
         {
-            var prompt = RegionOnMap switch
+            _ = RegionOnMap switch
             {
                 RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies),
                 RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies),
@@ -60,13 +61,69 @@ namespace TamboliyaApi.GameLogic
                 RegionOnMap.InnerHomePath => await GetPrompt(GreenProphecies),
                 _ => throw new ArgumentException("Region on the map is not right")
             };
-
-            PromptMessages.Enqueue(prompt);
         }
 
         private async Task<string> GetPrompt(ProphecyCollectionService prophecyService)
         {
-            return await prophecyService.GetProphecyAsync();
+            string prompt = await prophecyService.GetProphecyAsync();
+            PromptMessages.Enqueue(prompt);
+
+            ActualPositionOnMap newPosition = new();
+
+            string throwDice = "Брось игральную кость";
+            string gateToLandOfClarity = "Отправляйся к воротам на Земле Ясности";
+            string whatAmIDoingHere = "Отправляйся к вопросу Что я здесь делаю?";
+            string goToOrganizationalGrowth = "Отправляйся к Организационному росту";
+            string goToPersonalGrowth = "Отправляйся к Личностному Росту";
+            string goToInnerHome = "Отправляйся к Внутреннему Дому";
+
+            if (prompt == throwDice)
+            {
+                await ChooseRandomAction();
+            }
+            else if (prompt == gateToLandOfClarity)
+            {
+                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity,
+                    GamePathes.mapLandOfClarityPath, (int)LandOfClarity.Gatekeeper);
+            }
+            else if (prompt == whatAmIDoingHere)
+            {
+                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity,
+                    GamePathes.mapLandOfClarityPath, (int)LandOfClarity.WhatAmIDoingHere);
+            }
+            else if (prompt.Contains(goToOrganizationalGrowth))
+            {
+                await GoToNewPositionOnTheMap(RegionOnMap.OrganizationalPath,
+                    GamePathes.mapOrganizationalPath, (int)OrganizationalPath.Start);
+            }
+            else if (prompt.Contains(goToPersonalGrowth))
+            {
+                await GoToNewPositionOnTheMap(RegionOnMap.PersonalPath,
+                    GamePathes.mapPersonalPath, (int)PersonalPath.Birth);
+            }
+            else if (prompt.Contains(goToInnerHome))
+            {
+                await GoToNewPositionOnTheMap(RegionOnMap.InnerHomePath,
+                    GamePathes.mapInnerHomePath, (int)InnerHome.HealthyBody);
+            }
+            else
+            {
+                throw new ArgumentException(prompt, nameof(prompt));
+            }
+            PromptMessages.Enqueue(newPosition.Description);
+            return prompt;
+
+            async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, string pathToCards, int stepNumber)
+            {
+                var rootFolder = Directory.GetCurrentDirectory();
+                var path = Path.Combine(rootFolder, pathToCards);
+                var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
+                string prophecy = prophecies.Where(m => m.StartsWith($"{stepNumber} — ")).First();
+
+                newPosition.RegionOnMap = regionOnMap;
+                newPosition.Description = prophecy;
+                newPosition.PositionNumber = stepNumber;
+            }
         }
 
 

@@ -13,6 +13,7 @@ namespace TamboliyaApi.Services
         {
             Color = color;
         }
+
         public async Task<string> GetProphecyAsync()
         {
             if (Color == Color.NotSet)
