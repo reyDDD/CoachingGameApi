@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using TamboliyaApi.Data;
 
 namespace TamboliyaApi.Services
@@ -7,7 +8,9 @@ namespace TamboliyaApi.Services
     {
         public Color Color { get; init; }
 
+        [JsonIgnore]
         public List<string> Prophecies { get; set; } = new List<string>();
+
 
         public ProphecyCollectionService(Color color)
         {

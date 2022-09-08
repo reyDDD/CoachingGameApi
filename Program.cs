@@ -22,6 +22,7 @@ builder.Services.AddScoped<Dodecahedron>();
 builder.Services.AddScoped<Oracle>();
 builder.Services.AddScoped<ChooseRandomActionService>();
 builder.Services.AddScoped<NewMoveService>();
+builder.Services.AddScoped<NewGame>();
 
 var app = builder.Build();
 

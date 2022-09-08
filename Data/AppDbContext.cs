@@ -12,6 +12,16 @@ namespace TamboliyaApi.Data
         }
 
         public DbSet<SideOfDodecahedron> SideOfDodecahedrons { get; set; }
+        public DbSet<ActualPositionOnTheMap> ActualPositionsOnTheMap { get; set; }
+        public DbSet<ActualPositionsOnMapForSelect> ActualPositionsOnMapForSelect { get; set; }
+        public DbSet<Game> Games { get; set; }
+        public DbSet<InitialGameData> InitialGamesData { get; set; }
+
+
+
+
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

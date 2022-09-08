@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
@@ -7,18 +8,32 @@ namespace TamboliyaApi.GameLogic
 {
     public class NewGame
     {
+        public int Id { get; set; }
         public bool IsFinished { get; set; } = false;
-        public ProphecyCollectionService RedProphecies { get; init; }
-        public ProphecyCollectionService GreenProphecies { get; init; }
-        public ProphecyCollectionService BlueProphecies { get; init; }
-        public ProphecyCollectionService YellowProphecies { get; init; }
         public Oracle Oracle { get; init; }
-        public RegionOnMap RegionOnMap { get; set; }
-        public ChooseRandomActionService chooseRandomAction { get; set; }
-        public NewMoveService NewMoveService { get; set; }
         public ActualPositionOnMap ActualPosition { get; set; } = null!;
         public Queue<string> PromptMessages { get; set; } = new Queue<string>();
+
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
+
+        [JsonIgnore]
+        public ProphecyCollectionService RedProphecies { get; init; }
+
+        [JsonIgnore]
+        public ProphecyCollectionService GreenProphecies { get; init; }
+
+        [JsonIgnore]
+        public ProphecyCollectionService BlueProphecies { get; init; }
+
+        [JsonIgnore]
+        public ProphecyCollectionService YellowProphecies { get; init; }
+
+        [JsonIgnore]
+        public ChooseRandomActionService chooseRandomAction { get; set; }
+
+        [JsonIgnore]
+        public NewMoveService NewMoveService { get; set; }
+
 
 
         public NewGame(Oracle oracle,
@@ -36,9 +51,17 @@ namespace TamboliyaApi.GameLogic
 
 
 
-        public async Task GetOracle(string userQuestion)
+        public async Task<NewGame> GetOracle(string userQuestion)
         {
             await Oracle.Start(userQuestion);
+            ActualPosition = new()
+            {
+                Description = Oracle.ExitPath,
+                PositionNumber = Oracle.StepOnPath,
+                RegionOnMap = Oracle.RegionOnMap
+            };
+
+            return this;
         }
 
         public async Task GoToNewStage()
@@ -53,7 +76,7 @@ namespace TamboliyaApi.GameLogic
 
         public async Task ChooseRandomCard()
         {
-            _ = RegionOnMap switch
+            _ = ActualPosition.RegionOnMap switch
             {
                 RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies),
                 RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies),

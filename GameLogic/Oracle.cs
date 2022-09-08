@@ -15,6 +15,7 @@ namespace TamboliyaApi.GameLogic
         public string ChainLinks { get; private set; } = null!;
         public string ExitPath { get; private set; } = null!;
         public int StepOnPath { get; private set; }
+        public RegionOnMap RegionOnMap { get; private set; }
 
 
         public Oracle(Dodecahedron dodecahedron)
@@ -48,6 +49,7 @@ namespace TamboliyaApi.GameLogic
             ChainLinks = Step4!.Result.Prophecy;
             ExitPath = Step5!.Result.Prophecy;
             StepOnPath = await GetStepOnPath(Step5!.Result.Color);
+            RegionOnMap = GetRegion(Step5!.Result.Color);
         }
 
         private async Task<int> GetStepOnPath(Color color)
@@ -123,6 +125,18 @@ namespace TamboliyaApi.GameLogic
             var pattern = new Regex(@"^\d{1,2}\s");
             int positionNumber = Convert.ToInt32(pattern.Match(prophecy).Value);
             return (prophecy, positionNumber);
+        }
+
+        private RegionOnMap GetRegion(Color color)
+        {
+            return color switch
+            {
+                Color.Red => RegionOnMap.OrganizationalPath,
+                Color.Green => RegionOnMap.InnerHomePath,
+                Color.Yellow => RegionOnMap.PersonalPath,
+                Color.Blue => RegionOnMap.MysticalPath,
+                _ => throw new ArgumentException("Argument is not right", color.ToString())
+            };
         }
     }
 }
