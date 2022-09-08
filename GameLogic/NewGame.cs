@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TamboliyaApi.Data;
+﻿using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
 
@@ -7,6 +6,7 @@ namespace TamboliyaApi.GameLogic
 {
     public class NewGame
     {
+        public bool IsFinished { get; set; } = false;
         public ProphecyCollectionService RedProphecies { get; init; }
         public ProphecyCollectionService GreenProphecies { get; init; }
         public ProphecyCollectionService BlueProphecies { get; init; }
@@ -14,11 +14,15 @@ namespace TamboliyaApi.GameLogic
         public Oracle Oracle { get; init; }
         public RegionOnMap RegionOnMap { get; set; }
         public ChooseRandomActionService chooseRandomAction { get; set; }
-        public ActualPositionOnMap actualPosition { get; set; } = null!;
+        public NewMoveService newMoveService { get; set; }
+        public ActualPositionOnMap ActualPosition { get; set; } = null!;
         public Queue<string> PromptMessages { get; set; } = new Queue<string>();
+        public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
+
 
         public NewGame(Oracle oracle,
-            ChooseRandomActionService chooseRandomActionService)
+            ChooseRandomActionService chooseRandomActionService,
+            NewMoveService newMoveService)
         {
             RedProphecies = ProphecyCollectionService.Create(Color.Red);
             GreenProphecies = ProphecyCollectionService.Create(Color.Green);
@@ -26,6 +30,7 @@ namespace TamboliyaApi.GameLogic
             YellowProphecies = ProphecyCollectionService.Create(Color.Yellow);
             this.Oracle = oracle;
             chooseRandomAction = chooseRandomActionService;
+            this.newMoveService = newMoveService;
         }
 
 
@@ -35,9 +40,14 @@ namespace TamboliyaApi.GameLogic
             await Oracle.Start(userQuestion);
         }
 
+        public async Task GoToNewStage()
+        {
+            ActualPosition = await newMoveService.MakeMoveAsync(ActualPosition, this);
+        }
+
         public async Task ChooseRandomAction()
         {
-            actualPosition = await chooseRandomAction.ChooseAsync();
+            ActualPosition = await chooseRandomAction.ChooseAsync();
         }
 
         public async Task ChooseRandomCard()
@@ -58,5 +68,12 @@ namespace TamboliyaApi.GameLogic
         {
             return await prophecyService.GetProphecyAsync();
         }
+
+
+
+
+
+
+
     }
 }

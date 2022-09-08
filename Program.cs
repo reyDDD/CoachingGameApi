@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<Dodecahedron>();
 builder.Services.AddScoped<Oracle>();
 builder.Services.AddScoped<ChooseRandomActionService>();
+builder.Services.AddScoped<NewMoveService>();
 
 var app = builder.Build();
 

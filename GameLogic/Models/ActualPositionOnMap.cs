@@ -5,5 +5,6 @@
         public RegionOnMap RegionOnMap { get; set; }
         public string Description { get; set; } = null!;
         public int PositionNumber { get; set; }
+        public bool IsSelected { get; set; }
     }
 }
