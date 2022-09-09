@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
@@ -8,11 +7,12 @@ namespace TamboliyaApi.GameLogic
 {
     public class NewGame
     {
+        
+
         public int Id { get; set; }
         public bool IsFinished { get; set; } = false;
         public Oracle Oracle { get; init; }
         public ActualPositionOnMap ActualPosition { get; set; } = null!;
-        public Queue<string> PromptMessages { get; set; } = new Queue<string>();
 
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
 
@@ -28,17 +28,16 @@ namespace TamboliyaApi.GameLogic
         [JsonIgnore]
         public ProphecyCollectionService YellowProphecies { get; init; }
 
-        [JsonIgnore]
-        public ChooseRandomActionService chooseRandomAction { get; set; }
 
-        [JsonIgnore]
-        public NewMoveService NewMoveService { get; set; }
-
+        private readonly ChooseRandomActionService chooseRandomAction;
+        private readonly NewMoveService newMoveService;
+        private readonly LogService logService;
 
 
         public NewGame(Oracle oracle,
             ChooseRandomActionService chooseRandomActionService,
-            NewMoveService newMoveService)
+            NewMoveService newMoveService,
+            LogService logService)
         {
             RedProphecies = ProphecyCollectionService.Create(Color.Red);
             GreenProphecies = ProphecyCollectionService.Create(Color.Green);
@@ -46,7 +45,8 @@ namespace TamboliyaApi.GameLogic
             YellowProphecies = ProphecyCollectionService.Create(Color.Yellow);
             Oracle = oracle;
             chooseRandomAction = chooseRandomActionService;
-            NewMoveService = newMoveService;
+            this.newMoveService = newMoveService;
+            this.logService = logService;
         }
 
 
@@ -64,9 +64,9 @@ namespace TamboliyaApi.GameLogic
             return this;
         }
 
-        public async Task GoToNewStage()
+        public async Task GoToNewStage(Game game)
         {
-            ActualPosition = await NewMoveService.MakeMoveAsync(ActualPosition, this);
+            ActualPosition = await newMoveService.MakeMoveAsync(ActualPosition, this, game);
         }
 
         public async Task ChooseRandomAction()
@@ -74,22 +74,21 @@ namespace TamboliyaApi.GameLogic
             ActualPosition = await chooseRandomAction.ChooseAsync();
         }
 
-        public async Task ChooseRandomCard()
+        public async Task ChooseRandomCard(Game game)
         {
             _ = ActualPosition.RegionOnMap switch
             {
-                RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies),
-                RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies),
-                RegionOnMap.MysticalPath => await GetPrompt(BlueProphecies),
-                RegionOnMap.InnerHomePath => await GetPrompt(GreenProphecies),
-                _ => throw new ArgumentException("Region on the map is not right")
+                RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies, game),
+                RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies, game),
+                RegionOnMap.MysticalPath => await GetPrompt(BlueProphecies, game),
+                RegionOnMap.InnerHomePath => await GetPrompt(GreenProphecies, game)
             };
         }
 
-        private async Task<string> GetPrompt(ProphecyCollectionService prophecyService)
+        private async Task<string> GetPrompt(ProphecyCollectionService prophecyService, Game game)
         {
             string prompt = await prophecyService.GetProphecyAsync();
-            PromptMessages.Enqueue(prompt);
+            logService.AddRecord(game, prompt);
 
             ActualPositionOnMap newPosition = new();
 
@@ -133,7 +132,7 @@ namespace TamboliyaApi.GameLogic
             {
                 throw new ArgumentException(prompt, nameof(prompt));
             }
-            PromptMessages.Enqueue(newPosition.Description);
+
             return prompt;
 
             async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, string pathToCards, int stepNumber)

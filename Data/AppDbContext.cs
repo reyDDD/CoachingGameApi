@@ -16,6 +16,7 @@ namespace TamboliyaApi.Data
         public DbSet<ActualPositionsOnMapForSelect> ActualPositionsOnMapForSelect { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<InitialGameData> InitialGamesData { get; set; }
+        public DbSet<GameLog> GameLogs { get; set; }
 
 
 

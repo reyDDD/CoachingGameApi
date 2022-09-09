@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
+using TamboliyaApi.Services;
 
 namespace TamboliyaApi.GameLogic
 {
@@ -9,45 +11,50 @@ namespace TamboliyaApi.GameLogic
         private const string finishMessage = "Почни гру з початку, з новим питанням";
         private const string selectEmbodimentMessage = "Вибери один зі шляхів самореалізації або перейди в будь-яке інше місце на карті"; //TODO: Переход в любое место на карте не реализован. Сделать!
 
-        public NewMoveService(Dodecahedron dodecahedron)
+        private readonly LogService logService;
+
+        public NewMoveService(Dodecahedron dodecahedron, LogService logService)
         {
             this.dodecahedron = dodecahedron;
+            this.logService = logService;   
         }
 
-        public async Task<ActualPositionOnMap> MakeMoveAsync(ActualPositionOnMap actualPosition, NewGame game)
+        public async Task<ActualPositionOnMap> MakeMoveAsync(ActualPositionOnMap actualPosition, 
+            NewGame newGame, Game game)
         {
             return actualPosition.RegionOnMap switch
             {
                 RegionOnMap.OrganizationalPath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                game, GamePathes.mapOrganizationalPath, RegionOnMap.OrganizationalPath, RegionOnMap.LandOfClarity,
+                newGame, GamePathes.mapOrganizationalPath, RegionOnMap.OrganizationalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.NameYourIsland),
                 
                 RegionOnMap.PersonalPath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                game, GamePathes.mapPersonalPath, RegionOnMap.PersonalPath, RegionOnMap.LandOfClarity,
+                newGame, GamePathes.mapPersonalPath, RegionOnMap.PersonalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.WhoSees),
                 
                 RegionOnMap.InnerHomePath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                game, GamePathes.mapInnerHomePath, RegionOnMap.InnerHomePath, RegionOnMap.LandOfClarity, 
+                newGame, GamePathes.mapInnerHomePath, RegionOnMap.InnerHomePath, RegionOnMap.LandOfClarity, 
                 (int)LandOfClarity.WhatAmIDoingHere),
 
                 RegionOnMap.MysticalPath => await NewPositionStepOnStep(actualPosition.PositionNumber, 
-                game, GamePathes.mapMysticalPath, RegionOnMap.MysticalPath, RegionOnMap.LandOfClarity,
+                newGame, GamePathes.mapMysticalPath, RegionOnMap.MysticalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.WhoTeaches),
                 
 
-                RegionOnMap.Delusion => await NewPositionStepOnStep(actualPosition.PositionNumber, game,
+                RegionOnMap.Delusion => await NewPositionStepOnStep(actualPosition.PositionNumber, newGame,
                 GamePathes.mapDelusionPath, RegionOnMap.Delusion, RegionOnMap.MysticalPath, 
                 (int)MysticalPath.FulfillmentOfDesires),
 
-                RegionOnMap.Embodiment => await NewStepOnEmbodiment(actualPosition.PositionNumber, game),
+                RegionOnMap.Embodiment => await NewStepOnEmbodiment(actualPosition.PositionNumber, newGame),
                 
-                RegionOnMap.LandOfClarity => await NewStepOnLandOfClarity(actualPosition.PositionNumber, game),
+                RegionOnMap.LandOfClarity => await NewStepOnLandOfClarity(actualPosition.PositionNumber, newGame, game),
                 
                 _ => throw new ArgumentException("Region on the map is not right")
             };
         }
 
-        private async Task<ActualPositionOnMap> NewStepOnLandOfClarity(int positionNumber, NewGame game)
+        private async Task<ActualPositionOnMap> NewStepOnLandOfClarity(int positionNumber, 
+            NewGame newGame, Game game)
         {
             string rootFolder = Directory.GetCurrentDirectory()!;
             string path = Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!;
@@ -56,19 +63,19 @@ namespace TamboliyaApi.GameLogic
                 RegionOnMap = RegionOnMap.LandOfClarity
             };
 
-            if (game.ActualPositionsForSelect.Count() > 0)
+            if (newGame.ActualPositionsForSelect.Count() > 0)
             {
-                for (int i = 0; i < game.ActualPositionsForSelect.Count(); i++)
+                for (int i = 0; i < newGame.ActualPositionsForSelect.Count(); i++)
                 {
-                    if (game.ActualPositionsForSelect[i].IsSelected)
+                    if (newGame.ActualPositionsForSelect[i].IsSelected)
                     {
-                        actualPositionOnMap.PositionNumber = game.ActualPositionsForSelect[i].PositionNumber;
+                        actualPositionOnMap.PositionNumber = newGame.ActualPositionsForSelect[i].PositionNumber;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
-                            .First(line => line.StartsWith(game.ActualPositionsForSelect[i].PositionNumber + " —"));
+                            .First(line => line.StartsWith(newGame.ActualPositionsForSelect[i].PositionNumber + " —"));
                         break;
                     }
                 }
-                game.ActualPositionsForSelect = new();
+                newGame.ActualPositionsForSelect = new();
             }
             else
             {
@@ -81,14 +88,12 @@ namespace TamboliyaApi.GameLogic
                         actualPositionOnMap.PositionNumber = (int)LandOfClarity.DifferenceGoodAndEvil;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                             .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                        game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                     }
                     else
                     {
                         actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhereForceComeIn;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                             .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                        game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                     }
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhereForceComeIn)
@@ -96,21 +101,18 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhoYourPartner;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.DifferenceGoodAndEvil)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatIsRiverOfLife;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhatIsRiverOfLife)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatIsConsciousness;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 if ((LandOfClarity)positionNumber == LandOfClarity.WhatIsConsciousness)
                 {
@@ -120,14 +122,12 @@ namespace TamboliyaApi.GameLogic
                         actualPositionOnMap.PositionNumber = (int)LandOfClarity.YourRefuge;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                             .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                        game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                     }
                     else
                     {
                         actualPositionOnMap.PositionNumber = (int)LandOfClarity.NameShadowOfDeath;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                             .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                        game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                     }
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.NameShadowOfDeath)
@@ -135,57 +135,50 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.RestartGame;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.IsFinished = true;
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
-                    game.PromptMessages.Enqueue(finishMessage);
+                    newGame.IsFinished = true;
+                    logService.AddRecord(game, finishMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.YourRefuge)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhoTeaches;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhoTeaches)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(game, path);
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
-                    game.PromptMessages.Enqueue(selectEmbodimentMessage);
+                    await AddActualPositionOnLandOfClarityToList(newGame, path);
+                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourIsland)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.NameYourBoat;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourBoat)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(game, path);
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
-                    game.PromptMessages.Enqueue(selectEmbodimentMessage);
+                    await AddActualPositionOnLandOfClarityToList(newGame, path);
+                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhoSees)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.NameYourBridge;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourBridge)
                 {
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(game, path);
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
-                    game.PromptMessages.Enqueue(selectEmbodimentMessage);
+                    await AddActualPositionOnLandOfClarityToList(newGame, path);
+                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhatIsSerenity)
                 {
@@ -194,7 +187,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.RegionOnMap = RegionOnMap.Embodiment;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhereLoveComeFrom)
                 {
@@ -203,7 +195,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.RegionOnMap = RegionOnMap.Embodiment;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhoResponsibleForTeachings)
                 {
@@ -212,7 +203,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.RegionOnMap = RegionOnMap.Embodiment;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    game.PromptMessages.Enqueue(actualPositionOnMap.Description);
                 }
             }
 
@@ -234,21 +224,18 @@ namespace TamboliyaApi.GameLogic
                 actualPositionOnMap.PositionNumber = (int)Embodiment.Moonbeam;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.PilgrimWanderer)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.Sunshine;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.TeacherFriend)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.RainbowBeam;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.Moonbeam ||
                 (Embodiment)positionNumber == Embodiment.Sunshine ||
@@ -257,42 +244,36 @@ namespace TamboliyaApi.GameLogic
                 actualPositionOnMap.PositionNumber = (int)Embodiment.MyGift;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.MyGift)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.MyWay;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.MyWay)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.Wisdom;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.Wisdom)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.EngagementLimit;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.EngagementLimit)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.WhereGoWhoUnderstandEverything;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.WhereGoWhoUnderstandEverything)
             {
                 actualPositionOnMap.PositionNumber = (int)Embodiment.TruthAndFalsehood;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if ((Embodiment)positionNumber == Embodiment.TruthAndFalsehood)
             {
@@ -300,7 +281,6 @@ namespace TamboliyaApi.GameLogic
                 actualPositionOnMap.PositionNumber = (int)Delusion.TruthAndFalsehood;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             return actualPositionOnMap!;
         }
@@ -321,7 +301,6 @@ namespace TamboliyaApi.GameLogic
                 actualPositionOnMap.PositionNumber = positionNumber + 1;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
             else if (positionNumber == 12)
             {
@@ -329,29 +308,9 @@ namespace TamboliyaApi.GameLogic
                 actualPositionOnMap.PositionNumber = (int)stepPositionNumberOnNextRegionMap;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                game.PromptMessages.Enqueue(actualPositionOnMap.Description);
             }
 
             return actualPositionOnMap!;
-        }
-
-
-
-        private Task<ActualPositionOnMap> NewStepOnInnerHome(int positionNumber)
-        {
-            throw new NotImplementedException();
-        }
-
-        
-
-        private Task<ActualPositionOnMap> NewStepOnPersonal(int positionNumber)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Task<ActualPositionOnMap> NewStepOnOrganization(int positionNumber)
-        {
-            throw new NotImplementedException();
         }
 
 

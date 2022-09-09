@@ -1,6 +1,8 @@
 ﻿using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
+using TamboliyaApi.GameLogic.DAL;
 using TamboliyaApi.GameLogic.ModelDTOs;
+using TamboliyaApi.GameLogic.Models;
 
 namespace TamboliyaApi.Services
 {
@@ -23,6 +25,21 @@ namespace TamboliyaApi.Services
             };
 
             return oracleDTO;
+        }
+
+
+        public static ActualPositionsOnMapForSelect PositionDALToActualPosition(this ActualPositionOnMap position, Game game)
+        {
+            ActualPositionsOnMapForSelect basePosition = new()
+            {
+                RegionOnMap = position.RegionOnMap,
+                PositionNumber = position.PositionNumber,
+                Description = position.Description,
+                IsSelected = position.IsSelected,
+                Game = game
+            };
+
+            return basePosition;
         }
 
         public static Game NewGameToGame(this NewGame newGame)
@@ -50,6 +67,32 @@ namespace TamboliyaApi.Services
                     RegionOnMap = newGame.ActualPosition.RegionOnMap
                 },
 
+            };
+            return game;
+        }
+
+
+        public static GameDTO GameToGameDTO(this Game newGame)
+        {
+            GameDTO game = new()
+            {
+                GameId = newGame.Id,
+                IsFinished = newGame.IsFinished,
+                ActualPosition = new()
+                {
+                    Description = newGame.ActualPosition.Description,
+                    PositionNumber = newGame.ActualPosition.PositionNumber,
+                    RegionOnMap = newGame.ActualPosition.RegionOnMap
+                },
+                ActualPositionsForSelect = newGame.ActualPositionsForSelect?
+                .Select(x => new ActualPositionOnMap()
+                {
+                    Description = x.Description,
+                    RegionOnMap = x.RegionOnMap,
+                    PositionNumber = x.PositionNumber,
+                    IsSelected = x.IsSelected
+
+                }).ToList()
             };
             return game;
         }

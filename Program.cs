@@ -19,12 +19,14 @@ builder.Services.AddSwaggerGen(c =>
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
 });
 
+builder.Services.AddSingleton<UnitOfWork>();
 builder.Services.AddScoped<Dodecahedron>();
 builder.Services.AddScoped<Oracle>();
 builder.Services.AddScoped<ChooseRandomActionService>();
 builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
-builder.Services.AddScoped<UnitOfWork>();
+builder.Services.AddScoped<LogService>();
+
 
 var app = builder.Build();
 

@@ -10,6 +10,7 @@ namespace TamboliyaApi.Services
         private GenericRepository<InitialGameData> oracleRepository = null!;
         private GenericRepository<ActualPositionOnTheMap> actualPositionOnTheMapRepository = null!;
         private GenericRepository<ActualPositionsOnMapForSelect> actualPositionsOnMapForSelectRepository = null!;
+        private GenericRepository<GameLog> gameLog = null!;
 
 
 
@@ -68,6 +69,19 @@ namespace TamboliyaApi.Services
                     this.actualPositionsOnMapForSelectRepository = new GenericRepository<ActualPositionsOnMapForSelect>(context);
                 }
                 return actualPositionsOnMapForSelectRepository;
+            }
+        }
+
+        public GenericRepository<GameLog> GameLog
+        {
+            get
+            {
+
+                if (this.gameLog == null)
+                {
+                    this.gameLog = new GenericRepository<GameLog>(context);
+                }
+                return gameLog;
             }
         }
 
