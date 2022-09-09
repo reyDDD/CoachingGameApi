@@ -7,7 +7,7 @@ namespace TamboliyaApi.GameLogic
 {
     public class NewGame
     {
-        
+
 
         public int Id { get; set; }
         public bool IsFinished { get; set; } = false;
@@ -90,7 +90,7 @@ namespace TamboliyaApi.GameLogic
             string prompt = await prophecyService.GetProphecyAsync();
             logService.AddRecord(game, prompt);
 
-            ActualPositionOnMap newPosition = new();
+
 
             string throwDice = "Брось игральную кость";
             string gateToLandOfClarity = "Отправляйся к воротам на Земле Ясности";
@@ -105,28 +105,23 @@ namespace TamboliyaApi.GameLogic
             }
             else if (prompt == gateToLandOfClarity)
             {
-                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity,
-                    GamePathes.mapLandOfClarityPath, (int)LandOfClarity.Gatekeeper);
+                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity, (int)LandOfClarity.Gatekeeper);
             }
             else if (prompt == whatAmIDoingHere)
             {
-                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity,
-                    GamePathes.mapLandOfClarityPath, (int)LandOfClarity.WhatAmIDoingHere);
+                await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity, (int)LandOfClarity.WhatAmIDoingHere);
             }
             else if (prompt.Contains(goToOrganizationalGrowth))
             {
-                await GoToNewPositionOnTheMap(RegionOnMap.OrganizationalPath,
-                    GamePathes.mapOrganizationalPath, (int)OrganizationalPath.Start);
+                await GoToNewPositionOnTheMap(RegionOnMap.OrganizationalPath, (int)OrganizationalPath.Start);
             }
             else if (prompt.Contains(goToPersonalGrowth))
             {
-                await GoToNewPositionOnTheMap(RegionOnMap.PersonalPath,
-                    GamePathes.mapPersonalPath, (int)PersonalPath.Birth);
+                await GoToNewPositionOnTheMap(RegionOnMap.PersonalPath, (int)PersonalPath.Birth);
             }
             else if (prompt.Contains(goToInnerHome))
             {
-                await GoToNewPositionOnTheMap(RegionOnMap.InnerHomePath,
-                    GamePathes.mapInnerHomePath, (int)InnerHome.HealthyBody);
+                await GoToNewPositionOnTheMap(RegionOnMap.InnerHomePath, (int)InnerHome.HealthyBody);
             }
             else
             {
@@ -135,20 +130,32 @@ namespace TamboliyaApi.GameLogic
 
             return prompt;
 
-            async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, string pathToCards, int stepNumber)
-            {
-                var rootFolder = Directory.GetCurrentDirectory();
-                var path = Path.Combine(rootFolder, pathToCards);
-                var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
-                string prophecy = prophecies.Where(m => m.StartsWith($"{stepNumber} — ")).First();
 
-                newPosition.RegionOnMap = regionOnMap;
-                newPosition.Description = prophecy;
-                newPosition.PositionNumber = stepNumber;
-            }
         }
 
+        public async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, int stepNumber)
+        {
+            ActualPositionOnMap newPosition = new();
 
+            string pathToCards = regionOnMap switch
+            {
+                RegionOnMap.LandOfClarity => GamePathes.mapLandOfClarityPath,
+                RegionOnMap.OrganizationalPath => GamePathes.mapOrganizationalPath,
+                RegionOnMap.PersonalPath => GamePathes.mapPersonalPath,
+                RegionOnMap.InnerHomePath => GamePathes.mapInnerHomePath,
+                _ => throw new ArgumentException("RegionOnMap isn't correct", regionOnMap.ToString())
+            };
+
+
+            var rootFolder = Directory.GetCurrentDirectory();
+            var path = Path.Combine(rootFolder, pathToCards);
+            var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
+            string prophecy = prophecies.Where(m => m.StartsWith($"{stepNumber} — ")).First();
+
+            newPosition.RegionOnMap = regionOnMap;
+            newPosition.Description = prophecy;
+            newPosition.PositionNumber = stepNumber;
+        }
 
 
 

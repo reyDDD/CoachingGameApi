@@ -70,7 +70,13 @@ namespace TamboliyaApi.Controllers
             if (game.IsFinished) return BadRequest("Game was finished");
 
 
-            if (moveModel.ActionType == ActionType.RandomAction)
+            if ((moveModel.RegionOnMap != null && moveModel.RegionOnMap != RegionOnMap.NotSet) &&
+                (moveModel.PositionNumber != null && moveModel.PositionNumber != 0))
+            {
+                await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap!.Value, 
+                    moveModel.PositionNumber!.Value);
+            }
+            else if (moveModel.ActionType == ActionType.RandomAction)
             {
                 await newGame.ChooseRandomAction();
             }
