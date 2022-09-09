@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.GameLogic;
+using TamboliyaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddScoped<Oracle>();
 builder.Services.AddScoped<ChooseRandomActionService>();
 builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
+builder.Services.AddScoped<UnitOfWork>();
 
 var app = builder.Build();
 

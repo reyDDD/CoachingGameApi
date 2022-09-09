@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
+using TamboliyaApi.Services;
 
 namespace TamboliyaApi.Controllers
 {
@@ -12,12 +13,15 @@ namespace TamboliyaApi.Controllers
     public class GameController : ControllerBase
     {
         private readonly AppDbContext context;
-        private readonly NewGame game;
+        private readonly NewGame newGame;
+        private readonly UnitOfWork unitOfWork;
 
-        public GameController(AppDbContext context, NewGame game)
+        public GameController(AppDbContext context, NewGame game,
+            UnitOfWork unitOfWork)
         {
             this.context = context;
-            this.game = game;
+            this.newGame = game;
+            this.unitOfWork = unitOfWork;
         }
 
 
@@ -33,9 +37,11 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> StartNewGame(string question)
         {
-            var newGame = await game.GetOracle(question);
+            var game = (await newGame.GetOracle(question)).NewGameToGame();
+            unitOfWork.GameRepository.Insert(game);
+            await unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(StartNewGame), newGame);
+            return CreatedAtAction(nameof(StartNewGame), game.InitialGameData.InitialGameDataToOracleDTO());
         }
     }
 }

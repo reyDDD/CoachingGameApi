@@ -19,14 +19,21 @@ namespace TamboliyaApi.Data
 
 
 
-
-
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Number).IsRequired(); });
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Color).IsRequired(); });
+            modelBuilder.Entity<ActualPositionsOnMapForSelect>()
+                .HasOne(x=>x.Game)
+                .WithMany(x=>x.ActualPositionsForSelect)
+                .HasForeignKey(x=>x.GameId);
+            modelBuilder.Entity<Game>()
+                .HasOne(x => x.InitialGameData)
+                .WithOne(x => x.Game);
+            modelBuilder.Entity<Game>()
+                .HasOne(x => x.ActualPosition)
+                .WithOne(x => x.Game);
+
 
             #region SideOfDodecahedronSeed
             modelBuilder.Entity<SideOfDodecahedron>().HasData(new SideOfDodecahedron { Id = 1, Number = 1, Color = Color.Red });

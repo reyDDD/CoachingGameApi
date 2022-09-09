@@ -8,6 +8,7 @@ namespace TamboliyaApi.GameLogic
     {
         private readonly Dodecahedron dodecahedron;
 
+        public int GameId { get; set; }
         public string Question { get; private set; } = null!;
         public string Motive { get; private set; } = null!;
         public string QualityOfExperience { get; private set; } = null!;

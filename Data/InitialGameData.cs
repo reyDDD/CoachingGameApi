@@ -7,14 +7,14 @@ namespace TamboliyaApi.Data
     {
         [Key]
         public int Id { get; set; }
-        public string Question { get; private set; } = null!;
-        public string Motive { get; private set; } = null!;
-        public string QualityOfExperience { get; private set; } = null!;
-        public string EnvironmentAndCircumstances { get; private set; } = null!;
-        public string ChainLinks { get; private set; } = null!;
-        public string ExitPath { get; private set; } = null!;
-        public RegionOnMap RegionOnMap { get; private set; }
-        public int StepOnPath { get; private set; }
+        public string Question { get; set; } = null!;
+        public string Motive { get; set; } = null!;
+        public string QualityOfExperience { get; set; } = null!;
+        public string EnvironmentAndCircumstances { get; set; } = null!;
+        public string ChainLinks { get; set; } = null!;
+        public string ExitPath { get; set; } = null!;
+        public RegionOnMap RegionOnMap { get; set; }
+        public int StepOnPath { get; set; }
 
         public int GameId { get; set; }
         public Game Game { get; set; } = null!;
