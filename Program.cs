@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen(c =>
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
 });
 
-builder.Services.AddSingleton<UnitOfWork>();
+builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddSingleton<ProphecyCollectionService>();
 builder.Services.AddScoped<Dodecahedron>();
 builder.Services.AddScoped<Oracle>();
