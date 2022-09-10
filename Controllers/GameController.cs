@@ -73,7 +73,7 @@ namespace TamboliyaApi.Controllers
             if ((moveModel.RegionOnMap != null && moveModel.RegionOnMap != RegionOnMap.NotSet) &&
                 (moveModel.PositionNumber != null && moveModel.PositionNumber != 0))
             {
-                await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap!.Value, 
+                await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap!.Value,
                     moveModel.PositionNumber!.Value);
             }
             else if (moveModel.ActionType == ActionType.RandomAction)
@@ -105,6 +105,13 @@ namespace TamboliyaApi.Controllers
             unitOfWork.GameRepository.Update(game);
             await unitOfWork.SaveAsync();
             logService.AddRecord(game);
+
+
+            if (game.IsFinished)
+            {
+                await newGame.EndOfTheGame(game);
+            }
+
             return CreatedAtAction(nameof(StartNewGame), game.GameToGameDTO());
         }
     }

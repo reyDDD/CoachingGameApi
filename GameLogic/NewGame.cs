@@ -74,6 +74,16 @@ namespace TamboliyaApi.GameLogic
             ActualPosition = await chooseRandomAction.ChooseAsync();
         }
 
+        public async Task EndOfTheGame(Game game)
+        {
+            Task emotions = GetPrompt(GreenProphecies, game, false);
+            Task deception = GetPrompt(YellowProphecies, game, false);
+            Task equilibrium = GetPrompt(BlueProphecies, game, false);
+            Task desire = GetPrompt(RedProphecies, game, false);
+
+            await Task.WhenAll(emotions, deception, equilibrium, desire);
+        }
+
         public async Task ChooseRandomCard(Game game)
         {
             _ = ActualPosition.RegionOnMap switch
@@ -81,17 +91,26 @@ namespace TamboliyaApi.GameLogic
                 RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies, game),
                 RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies, game),
                 RegionOnMap.MysticalPath => await GetPrompt(BlueProphecies, game),
+                RegionOnMap.Delusion => await GetPrompt(BlueProphecies, game),
                 RegionOnMap.InnerHomePath => await GetPrompt(GreenProphecies, game)
             };
         }
 
-        private async Task<string> GetPrompt(ProphecyCollectionService prophecyService, Game game)
+        private async Task<string> GetPrompt(ProphecyCollectionService prophecyService,
+            Game game, bool executeInstruction = true)
         {
             string prompt = await prophecyService.GetProphecyAsync();
             logService.AddRecord(game, prompt);
 
+            if (executeInstruction)
+            {
+                await FollowInstructionsOnCard(prompt);
+            }
+            return prompt;
+        }
 
-
+        private async Task FollowInstructionsOnCard(string prompt)
+        {
             string throwDice = "Брось игральную кость";
             string gateToLandOfClarity = "Отправляйся к воротам на Земле Ясности";
             string whatAmIDoingHere = "Отправляйся к вопросу Что я здесь делаю?";
@@ -127,10 +146,6 @@ namespace TamboliyaApi.GameLogic
             {
                 throw new ArgumentException(prompt, nameof(prompt));
             }
-
-            return prompt;
-
-
         }
 
         public async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, int stepNumber)
