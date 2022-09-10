@@ -54,6 +54,15 @@ namespace TamboliyaApi.Controllers
         /// </summary>
         /// <param name="moveModel">Model for take next step at game</param>
         /// <returns>DTO model with new position at the game</returns>
+        /// <remarks>Sample request:
+        /// {
+        ///     "GameId": "PASSPORT",
+        ///     "ActionType": 0,
+        ///     "UserId" : "0000-0000-0000-0000-0000",
+        ///     "RegionOnMap": 0,
+        ///     "PositionNumber" : null
+        /// }
+        /// </remarks>
         [HttpPost]
         [Route("move")]
         [Produces("application/json")]

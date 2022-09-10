@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+    c.SchemaFilter<EnumSchemaFilter>();
 });
 
 builder.Services.AddScoped<UnitOfWork>();
