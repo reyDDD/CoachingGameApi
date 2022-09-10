@@ -43,9 +43,22 @@ namespace TamboliyaApi.Services
             }
         }
 
-        public virtual TEntity GetByID(object id)
+        public virtual TEntity? GetByID(Expression<Func<TEntity, bool>> filter, string includeProperties = "")
         {
-            return dbSet.Find(id)!;
+            IQueryable<TEntity> query = dbSet;
+
+            if( filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.ToList().FirstOrDefault();
         }
 
         public virtual void Insert(TEntity entity)

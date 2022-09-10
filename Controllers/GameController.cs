@@ -92,18 +92,22 @@ namespace TamboliyaApi.Controllers
         public async Task<ActionResult<GameDTO>> MakeMove([FromBody] MoveModel moveModel)
         {
             if (moveModel.ActionType <= ActionType.NotSet ||
-                moveModel.ActionType >= ActionType.UserVote)
+                moveModel.ActionType > ActionType.GoToSelectPosition)
                 return BadRequest("Action Type isn't correct");
 
-            var game = unitOfWork.GameRepository.GetByID(moveModel.GameId);
+            var game = unitOfWork.GameRepository
+                .GetByID(game => game.Id == moveModel.GameId,
+                includeProperties: "ActualPosition,InitialGameData");
             if (game == null) return BadRequest("Game not found");
             if (game.IsFinished) return BadRequest("Game was finished");
 
+            newGame.ActualPosition = game.ActualPosition.ActualPositionOnMapToDTO();
 
-            if ((moveModel.RegionOnMap != null && moveModel.RegionOnMap != RegionOnMap.NotSet) &&
+
+            if ((moveModel.RegionOnMap != RegionOnMap.NotSet) &&
                 (moveModel.PositionNumber != null && moveModel.PositionNumber != 0))
             {
-                await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap!.Value,
+                await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap,
                     moveModel.PositionNumber!.Value);
             }
             else if (moveModel.ActionType == ActionType.RandomAction)
@@ -112,12 +116,19 @@ namespace TamboliyaApi.Controllers
             }
             else if (moveModel.ActionType == ActionType.NewStep)
             {
-                var previousPosition = newGame.ActualPosition;
-                await newGame.ChooseRandomCard(game);
+                if (!(game.ActualPosition.RegionOnMap == RegionOnMap.LandOfClarity ||
+                    game.ActualPosition.RegionOnMap == RegionOnMap.Embodiment))
+                {
+                    await newGame.ChooseRandomCard(game);
+                }
 
-                if (newGame.ActualPosition.CompareBaseFiedls(game.ActualPosition))
+                if (newGame.ActualPosition!.CompareBaseFiedls(game.ActualPosition))
                 {
                     await newGame.GoToNewStage(game);
+                    if (newGame.ActualPositionsForSelect.Count() > 0)
+                    {
+                        return CreatedAtAction(nameof(MakeMove), game.GameToGameDTO(newGame.ActualPositionsForSelect));
+                    }
                 }
             }
             else
@@ -140,7 +151,7 @@ namespace TamboliyaApi.Controllers
                 await newGame.EndOfTheGame(game);
             }
 
-            return CreatedAtAction(nameof(StartNewGame), game.GameToGameDTO());
+            return CreatedAtAction(nameof(MakeMove), game.GameToGameDTO(newGame.ActualPositionsForSelect));
         }
     }
 }

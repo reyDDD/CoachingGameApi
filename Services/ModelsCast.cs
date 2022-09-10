@@ -1,4 +1,5 @@
-﻿using TamboliyaApi.Data;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.GameLogic.DAL;
 using TamboliyaApi.GameLogic.ModelDTOs;
@@ -28,7 +29,7 @@ namespace TamboliyaApi.Services
         }
 
 
-        
+
 
         public static Game NewGameToGame(this NewGame newGame)
         {
@@ -60,8 +61,11 @@ namespace TamboliyaApi.Services
         }
 
 
-        public static GameDTO GameToGameDTO(this Game newGame)
+        public static GameDTO GameToGameDTO(this Game newGame, 
+            List<ActualPositionOnMap>? actualPositionsForSelect = null)
         {
+            var listPositionForSelect = actualPositionsForSelect ?? new();
+
             GameDTO game = new()
             {
                 GameId = newGame.Id,
@@ -70,11 +74,26 @@ namespace TamboliyaApi.Services
                 {
                     Description = newGame.ActualPosition.Description,
                     PositionNumber = newGame.ActualPosition.PositionNumber,
-                    RegionOnMap = newGame.ActualPosition.RegionOnMap
+                    RegionOnMap = newGame.ActualPosition.RegionOnMap,
+                    IsSelected = null
                 },
-                Oracle = InitialGameDataToOracleDTO(newGame.InitialGameData)
+                Oracle = InitialGameDataToOracleDTO(newGame.InitialGameData),
+                ActualPositionsForSelect = listPositionForSelect
             };
             return game;
+        }
+
+
+        public static ActualPositionOnMap ActualPositionOnMapToDTO(this ActualPositionOnTheMap game)
+        {
+            ActualPositionOnMap oracleDTO = new()
+            {
+                RegionOnMap = game.RegionOnMap,
+                Description = game.Description,
+                PositionNumber = game.PositionNumber
+            };
+
+            return oracleDTO;
         }
     }
 }

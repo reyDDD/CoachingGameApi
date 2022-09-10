@@ -76,7 +76,7 @@ namespace TamboliyaApi.GameLogic
         {
             var position = dodecahedron.ThrowBone();
 
-            var rootFolder = Directory.GetCurrentDirectory();
+            var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             var path = Path.Combine(rootFolder, pathToValues);
             var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
             string prophecy = prophecies.Where(m => m.StartsWith(position.Color.ToString())).First();
@@ -87,7 +87,7 @@ namespace TamboliyaApi.GameLogic
         private async Task<(string Prophecy, int Number)> StepWithNumber(string pathToValues, bool additionalThrowBone = false)
         {
             var position = dodecahedron.ThrowBone();
-            var rootFolder = Directory.GetCurrentDirectory();
+            var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             var pathToValue = pathToValues;
 
             if (additionalThrowBone && position.Number == 7 && position.Number == 8)
@@ -116,7 +116,7 @@ namespace TamboliyaApi.GameLogic
             Dodecahedron dodecahedron)
         {
             var position = dodecahedron.ThrowBone();
-            var rootFolder = Directory.GetCurrentDirectory();
+            var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
 
             var path = Path.Combine(rootFolder, pathToValue);
             var prophecies = (await File.ReadAllLinesAsync(path)).ToList();

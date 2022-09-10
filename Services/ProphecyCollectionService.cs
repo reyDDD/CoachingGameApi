@@ -1,6 +1,7 @@
 ﻿using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
 using TamboliyaApi.Data;
+using TamboliyaApi.GameLogic;
 
 namespace TamboliyaApi.Services
 {
@@ -31,7 +32,7 @@ namespace TamboliyaApi.Services
 
             if (PropheciesCollection[color].Count() == 0)
             {
-                var rootFolder = Directory.GetCurrentDirectory();
+                var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
                 PropheciesCollection[color] = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, "Cards", @$"{color}.txt"))).ToList();
             }
 

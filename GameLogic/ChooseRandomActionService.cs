@@ -13,7 +13,7 @@ namespace TamboliyaApi.GameLogic
         }
         public async Task<ActualPositionOnMap> ChooseAsync()
         {
-            var rootFolder = Directory.GetCurrentDirectory();
+            var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             var sideOfBone = dodecahedron.ThrowBone();
             ActualPositionOnMap newPosition = new();
 

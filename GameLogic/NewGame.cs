@@ -23,7 +23,7 @@ namespace TamboliyaApi.GameLogic
 
         public NewGame(Oracle oracle,
             ChooseRandomActionService chooseRandomActionService,
-            NewMoveService newMoveService, LogService logService, 
+            NewMoveService newMoveService, LogService logService,
             ProphecyCollectionService prophecyCollectionService)
         {
             Oracle = oracle;
@@ -50,7 +50,7 @@ namespace TamboliyaApi.GameLogic
 
         public async Task GoToNewStage(Game game)
         {
-            ActualPosition = await newMoveService.MakeMoveAsync(ActualPosition, this, game);
+            ActualPosition = await newMoveService.MakeMoveAsync(this, game);
         }
 
         public async Task ChooseRandomAction()
@@ -70,7 +70,7 @@ namespace TamboliyaApi.GameLogic
 
         public async Task ChooseRandomCard(Game game)
         {
-            _ = ActualPosition.RegionOnMap switch
+            _ = game.ActualPosition.RegionOnMap switch
             {
                 RegionOnMap.OrganizationalPath => await GetPrompt(Color.Red, game),
                 RegionOnMap.PersonalPath => await GetPrompt(Color.Yellow, game),
@@ -127,34 +127,30 @@ namespace TamboliyaApi.GameLogic
             {
                 await GoToNewPositionOnTheMap(RegionOnMap.InnerHomePath, (int)InnerHome.HealthyBody);
             }
-            else
-            {
-                throw new ArgumentException(prompt, nameof(prompt));
-            }
         }
 
         public async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, int stepNumber)
         {
-            ActualPositionOnMap newPosition = new();
-
             string pathToCards = regionOnMap switch
             {
                 RegionOnMap.LandOfClarity => GamePathes.mapLandOfClarityPath,
                 RegionOnMap.OrganizationalPath => GamePathes.mapOrganizationalPath,
                 RegionOnMap.PersonalPath => GamePathes.mapPersonalPath,
                 RegionOnMap.InnerHomePath => GamePathes.mapInnerHomePath,
+                RegionOnMap.Embodiment => GamePathes.mapEmbodimentPath,
+                RegionOnMap.Delusion => GamePathes.mapDelusionPath,
                 _ => throw new ArgumentException("RegionOnMap isn't correct", regionOnMap.ToString())
             };
 
 
-            var rootFolder = Directory.GetCurrentDirectory();
+            var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             var path = Path.Combine(rootFolder, pathToCards);
             var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
             string prophecy = prophecies.Where(m => m.StartsWith($"{stepNumber} — ")).First();
 
-            newPosition.RegionOnMap = regionOnMap;
-            newPosition.Description = prophecy;
-            newPosition.PositionNumber = stepNumber;
+            ActualPosition.RegionOnMap = regionOnMap;
+            ActualPosition.Description = prophecy;
+            ActualPosition.PositionNumber = stepNumber;
         }
 
 

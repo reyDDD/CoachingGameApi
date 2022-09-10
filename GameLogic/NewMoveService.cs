@@ -16,47 +16,48 @@ namespace TamboliyaApi.GameLogic
         public NewMoveService(Dodecahedron dodecahedron, LogService logService)
         {
             this.dodecahedron = dodecahedron;
-            this.logService = logService;   
+            this.logService = logService;
         }
 
-        public async Task<ActualPositionOnMap> MakeMoveAsync(ActualPositionOnMap actualPosition, 
-            NewGame newGame, Game game)
+        public async Task<ActualPositionOnMap> MakeMoveAsync(NewGame newGame, Game game)
         {
+            ActualPositionOnMap actualPosition = game.ActualPosition.ActualPositionOnMapToDTO();
+
             return actualPosition.RegionOnMap switch
             {
-                RegionOnMap.OrganizationalPath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                newGame, GamePathes.mapOrganizationalPath, RegionOnMap.OrganizationalPath, RegionOnMap.LandOfClarity,
+                RegionOnMap.OrganizationalPath => await NewPositionStepOnStep(game.ActualPosition.PositionNumber,
+                game, GamePathes.mapOrganizationalPath, RegionOnMap.OrganizationalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.NameYourIsland),
-                
-                RegionOnMap.PersonalPath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                newGame, GamePathes.mapPersonalPath, RegionOnMap.PersonalPath, RegionOnMap.LandOfClarity,
+
+                RegionOnMap.PersonalPath => await NewPositionStepOnStep(game.ActualPosition.PositionNumber,
+                game, GamePathes.mapPersonalPath, RegionOnMap.PersonalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.WhoSees),
-                
-                RegionOnMap.InnerHomePath => await NewPositionStepOnStep(actualPosition.PositionNumber,
-                newGame, GamePathes.mapInnerHomePath, RegionOnMap.InnerHomePath, RegionOnMap.LandOfClarity, 
+
+                RegionOnMap.InnerHomePath => await NewPositionStepOnStep(game.ActualPosition.PositionNumber,
+                game, GamePathes.mapInnerHomePath, RegionOnMap.InnerHomePath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.WhatAmIDoingHere),
 
-                RegionOnMap.MysticalPath => await NewPositionStepOnStep(actualPosition.PositionNumber, 
-                newGame, GamePathes.mapMysticalPath, RegionOnMap.MysticalPath, RegionOnMap.LandOfClarity,
+                RegionOnMap.MysticalPath => await NewPositionStepOnStep(game.ActualPosition.PositionNumber,
+                game, GamePathes.mapMysticalPath, RegionOnMap.MysticalPath, RegionOnMap.LandOfClarity,
                 (int)LandOfClarity.WhoTeaches),
-                
 
-                RegionOnMap.Delusion => await NewPositionStepOnStep(actualPosition.PositionNumber, newGame,
-                GamePathes.mapDelusionPath, RegionOnMap.Delusion, RegionOnMap.MysticalPath, 
+
+                RegionOnMap.Delusion => await NewPositionStepOnStep(game.ActualPosition.PositionNumber,
+                game, GamePathes.mapDelusionPath, RegionOnMap.Delusion, RegionOnMap.MysticalPath,
                 (int)MysticalPath.FulfillmentOfDesires),
 
-                RegionOnMap.Embodiment => await NewStepOnEmbodiment(actualPosition.PositionNumber, newGame),
-                
-                RegionOnMap.LandOfClarity => await NewStepOnLandOfClarity(actualPosition.PositionNumber, newGame, game),
-                
+                RegionOnMap.Embodiment => await NewStepOnEmbodiment(game.ActualPosition.PositionNumber),
+
+                RegionOnMap.LandOfClarity => await NewStepOnLandOfClarity(game.ActualPosition.PositionNumber, newGame, game),
+
                 _ => throw new ArgumentException("Region on the map is not right")
             };
         }
 
-        private async Task<ActualPositionOnMap> NewStepOnLandOfClarity(int positionNumber, 
+        private async Task<ActualPositionOnMap> NewStepOnLandOfClarity(int positionNumber,
             NewGame newGame, Game game)
         {
-            string rootFolder = Directory.GetCurrentDirectory()!;
+            string rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             string path = Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!;
             ActualPositionOnMap actualPositionOnMap = new()
             {
@@ -149,8 +150,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(newGame, path);
-                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourIsland)
                 {
@@ -163,8 +162,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(newGame, path);
-                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhoSees)
                 {
@@ -177,8 +174,6 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
-                    await AddActualPositionOnLandOfClarityToList(newGame, path);
-                    logService.AddRecord(game, selectEmbodimentMessage);
                 }
                 else if ((LandOfClarity)positionNumber == LandOfClarity.WhatIsSerenity)
                 {
@@ -204,15 +199,26 @@ namespace TamboliyaApi.GameLogic
                     actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                         .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
                 }
+                else if ((LandOfClarity)positionNumber == LandOfClarity.WhatAmIDoingHere)
+                {
+                    path = Path.Combine(rootFolder, GamePathes.mapEmbodimentPath);
+                    await AddActualPositionOnLandOfClarityToList(newGame, path);
+
+                    actualPositionOnMap.PositionNumber = game.ActualPosition.PositionNumber;
+                    actualPositionOnMap.RegionOnMap = game.ActualPosition.RegionOnMap;
+                    actualPositionOnMap.Description = game.ActualPosition.Description;
+
+                    logService.AddRecord(game, selectEmbodimentMessage);
+                }
             }
 
-            
+
             return actualPositionOnMap;
         }
 
-        private async Task<ActualPositionOnMap> NewStepOnEmbodiment(int positionNumber, NewGame game)
+        private async Task<ActualPositionOnMap> NewStepOnEmbodiment(int positionNumber)
         {
-            string rootFolder = Directory.GetCurrentDirectory()!;
+            string rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             string path = Path.Combine(rootFolder, GamePathes.mapEmbodimentPath)!;
             ActualPositionOnMap actualPositionOnMap = new()
             {
@@ -285,25 +291,37 @@ namespace TamboliyaApi.GameLogic
             return actualPositionOnMap!;
         }
 
-        private async Task<ActualPositionOnMap> NewPositionStepOnStep(int positionNumber, NewGame game, 
+        private async Task<ActualPositionOnMap> NewPositionStepOnStep(int positionNumber, Game game,
             string pathToProphecy, RegionOnMap actualRegion, RegionOnMap nextStepRegion,
             int stepPositionNumberOnNextRegionMap = 1)
         {
-            string rootFolder = Directory.GetCurrentDirectory()!;
+            string rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
             string path = Path.Combine(rootFolder, pathToProphecy)!;
             ActualPositionOnMap actualPositionOnMap = new()
             {
                 RegionOnMap = actualRegion
             };
 
-            if (positionNumber > 0 && positionNumber < 12)
+            if (positionNumber > 0 && positionNumber < 12 && nextStepRegion != RegionOnMap.Embodiment)
             {
                 actualPositionOnMap.PositionNumber = positionNumber + 1;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
             }
-            else if (positionNumber == 12)
+            else if (positionNumber == 12 && nextStepRegion != RegionOnMap.Embodiment)
             {
+                path = game.ActualPosition.RegionOnMap switch
+                {
+                    RegionOnMap.OrganizationalPath => Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!,
+                    RegionOnMap.PersonalPath => Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!,
+                    RegionOnMap.MysticalPath => Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!,
+                    RegionOnMap.Delusion => Path.Combine(rootFolder, GamePathes.mapMysticalPath)!,
+                    RegionOnMap.InnerHomePath => Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath)!,
+                    RegionOnMap.Embodiment => Path.Combine(rootFolder, GamePathes.mapDelusionPath)!,
+                    _ => throw new ArgumentException("RegionOnMap isn't correct")
+                };
+
+
                 actualPositionOnMap.RegionOnMap = nextStepRegion;
                 actualPositionOnMap.PositionNumber = (int)stepPositionNumberOnNextRegionMap;
                 actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
@@ -318,26 +336,26 @@ namespace TamboliyaApi.GameLogic
         {
             game.ActualPositionsForSelect.Add(new()
             {
-                PositionNumber = (int)LandOfClarity.WhoResponsibleForTeachings,
-                RegionOnMap = RegionOnMap.LandOfClarity,
+                PositionNumber = (int)Embodiment.TeacherFriend,
+                RegionOnMap = RegionOnMap.Embodiment,
                 Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)LandOfClarity.WhoResponsibleForTeachings + " —"))
+                    .First(line => line.StartsWith((int)Embodiment.TeacherFriend + " —"))
             });
 
             game.ActualPositionsForSelect.Add(new()
             {
-                PositionNumber = (int)LandOfClarity.WhereLoveComeFrom,
-                RegionOnMap = RegionOnMap.LandOfClarity,
+                PositionNumber = (int)Embodiment.PilgrimWanderer,
+                RegionOnMap = RegionOnMap.Embodiment,
                 Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)LandOfClarity.WhereLoveComeFrom + " —"))
+                    .First(line => line.StartsWith((int)Embodiment.PilgrimWanderer + " —"))
             });
 
             game.ActualPositionsForSelect.Add(new()
             {
-                PositionNumber = (int)LandOfClarity.WhatIsSerenity,
-                RegionOnMap = RegionOnMap.LandOfClarity,
+                PositionNumber = (int)Embodiment.HermitMystic,
+                RegionOnMap = RegionOnMap.Embodiment,
                 Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)LandOfClarity.WhatIsSerenity + " —"))
+                    .First(line => line.StartsWith((int)Embodiment.HermitMystic + " —"))
             });
         }
     }
