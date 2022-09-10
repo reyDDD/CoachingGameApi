@@ -99,8 +99,6 @@ namespace TamboliyaApi.Controllers
             game.ActualPosition.RegionOnMap = newGame.ActualPosition.RegionOnMap;
             game.ActualPosition.Description = newGame.ActualPosition.Description;
             game.ActualPosition.PositionNumber = newGame.ActualPosition.PositionNumber;
-            game.ActualPositionsForSelect = newGame.ActualPositionsForSelect
-                .Select(x => x.PositionDALToActualPosition(game)).ToList();
 
             unitOfWork.GameRepository.Update(game);
             await unitOfWork.SaveAsync();

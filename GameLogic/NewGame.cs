@@ -7,26 +7,13 @@ namespace TamboliyaApi.GameLogic
 {
     public class NewGame
     {
-
-
         public int Id { get; set; }
         public bool IsFinished { get; set; } = false;
         public Oracle Oracle { get; init; }
         public ActualPositionOnMap ActualPosition { get; set; } = null!;
 
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
-
-        [JsonIgnore]
-        public ProphecyCollectionService RedProphecies { get; init; }
-
-        [JsonIgnore]
-        public ProphecyCollectionService GreenProphecies { get; init; }
-
-        [JsonIgnore]
-        public ProphecyCollectionService BlueProphecies { get; init; }
-
-        [JsonIgnore]
-        public ProphecyCollectionService YellowProphecies { get; init; }
+        public ProphecyCollectionService prophecyService;
 
 
         private readonly ChooseRandomActionService chooseRandomAction;
@@ -36,17 +23,14 @@ namespace TamboliyaApi.GameLogic
 
         public NewGame(Oracle oracle,
             ChooseRandomActionService chooseRandomActionService,
-            NewMoveService newMoveService,
-            LogService logService)
+            NewMoveService newMoveService, LogService logService, 
+            ProphecyCollectionService prophecyCollectionService)
         {
-            RedProphecies = ProphecyCollectionService.Create(Color.Red);
-            GreenProphecies = ProphecyCollectionService.Create(Color.Green);
-            BlueProphecies = ProphecyCollectionService.Create(Color.Blue);
-            YellowProphecies = ProphecyCollectionService.Create(Color.Yellow);
             Oracle = oracle;
             chooseRandomAction = chooseRandomActionService;
             this.newMoveService = newMoveService;
             this.logService = logService;
+            this.prophecyService = prophecyCollectionService;
         }
 
 
@@ -76,10 +60,10 @@ namespace TamboliyaApi.GameLogic
 
         public async Task EndOfTheGame(Game game)
         {
-            Task emotions = GetPrompt(GreenProphecies, game, false);
-            Task deception = GetPrompt(YellowProphecies, game, false);
-            Task equilibrium = GetPrompt(BlueProphecies, game, false);
-            Task desire = GetPrompt(RedProphecies, game, false);
+            Task emotions = GetPrompt(Color.Green, game, false);
+            Task deception = GetPrompt(Color.Yellow, game, false);
+            Task equilibrium = GetPrompt(Color.Blue, game, false);
+            Task desire = GetPrompt(Color.Red, game, false);
 
             await Task.WhenAll(emotions, deception, equilibrium, desire);
         }
@@ -88,18 +72,19 @@ namespace TamboliyaApi.GameLogic
         {
             _ = ActualPosition.RegionOnMap switch
             {
-                RegionOnMap.OrganizationalPath => await GetPrompt(RedProphecies, game),
-                RegionOnMap.PersonalPath => await GetPrompt(YellowProphecies, game),
-                RegionOnMap.MysticalPath => await GetPrompt(BlueProphecies, game),
-                RegionOnMap.Delusion => await GetPrompt(BlueProphecies, game),
-                RegionOnMap.InnerHomePath => await GetPrompt(GreenProphecies, game)
+                RegionOnMap.OrganizationalPath => await GetPrompt(Color.Red, game),
+                RegionOnMap.PersonalPath => await GetPrompt(Color.Yellow, game),
+                RegionOnMap.MysticalPath => await GetPrompt(Color.Blue, game),
+                RegionOnMap.Delusion => await GetPrompt(Color.Blue, game),
+                RegionOnMap.InnerHomePath => await GetPrompt(Color.Green, game),
+                _ => throw new ArgumentException("RegionOnMap isn't valid", ActualPosition.RegionOnMap.ToString())
             };
         }
 
-        private async Task<string> GetPrompt(ProphecyCollectionService prophecyService,
+        private async Task<string> GetPrompt(Color color,
             Game game, bool executeInstruction = true)
         {
-            string prompt = await prophecyService.GetProphecyAsync();
+            string prompt = await prophecyService.GetProphecyAsync(color);
             logService.AddRecord(game, prompt);
 
             if (executeInstruction)

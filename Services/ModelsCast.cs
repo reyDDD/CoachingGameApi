@@ -84,15 +84,6 @@ namespace TamboliyaApi.Services
                     PositionNumber = newGame.ActualPosition.PositionNumber,
                     RegionOnMap = newGame.ActualPosition.RegionOnMap
                 },
-                ActualPositionsForSelect = newGame.ActualPositionsForSelect?
-                .Select(x => new ActualPositionOnMap()
-                {
-                    Description = x.Description,
-                    RegionOnMap = x.RegionOnMap,
-                    PositionNumber = x.PositionNumber,
-                    IsSelected = x.IsSelected
-
-                }).ToList()
             };
             return game;
         }

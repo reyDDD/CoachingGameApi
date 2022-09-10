@@ -10,6 +10,6 @@ namespace TamboliyaApi.Data
         public bool IsFinished { get; set; } = false;
         public InitialGameData InitialGameData { get; set; } = null!;
         public ActualPositionOnTheMap ActualPosition { get; set; } = null!;
-        public List<ActualPositionsOnMapForSelect>? ActualPositionsForSelect { get; set; }
+        //public List<ActualPositionsOnMapForSelect>? ActualPositionsForSelect { get; set; }
     }
 }

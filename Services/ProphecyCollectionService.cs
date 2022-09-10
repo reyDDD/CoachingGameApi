@@ -1,41 +1,45 @@
-﻿using System.Text.Json.Serialization;
+﻿using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Text.Json.Serialization;
 using TamboliyaApi.Data;
 
 namespace TamboliyaApi.Services
 {
     public class ProphecyCollectionService
     {
-        public Color Color { get; init; }
+        public Dictionary<Color, List<string>> PropheciesCollection { get; set; } = new();
 
-        [JsonIgnore]
-        public List<string> Prophecies { get; set; } = new List<string>();
-
-
-        public ProphecyCollectionService(Color color)
+        public ProphecyCollectionService()
         {
-            Color = color;
+            InitProphecies();
         }
 
-        public async Task<string> GetProphecyAsync()
+        public void InitProphecies()
         {
-            if (Color == Color.NotSet)
+            PropheciesCollection.Add(Color.Red, new());
+            PropheciesCollection.Add(Color.Green, new());
+            PropheciesCollection.Add(Color.Blue, new());
+            PropheciesCollection.Add(Color.Yellow, new());
+
+        }
+
+        public async Task<string> GetProphecyAsync(Color color)
+        {
+            if (color == Color.NotSet)
             {
                 throw new ArgumentException("Color card not set");
             }
 
-            if (Prophecies.Count() == 0)
+            if (PropheciesCollection[color].Count() == 0)
             {
                 var rootFolder = Directory.GetCurrentDirectory();
-                Prophecies = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, "Cards", @$"{Color}.txt"))).ToList();
+                PropheciesCollection[color] = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, "Cards", @$"{color}.txt"))).ToList();
             }
 
             var random = new Random();
-            var index = random.Next(0, Prophecies.Count());
-            var prophecy = Prophecies[index];
-            Prophecies.RemoveAt(index);
+            var index = random.Next(0, PropheciesCollection[color].Count());
+            var prophecy = PropheciesCollection[color][index];
+            PropheciesCollection[color].RemoveAt(index);
             return prophecy;
         }
-
-        public static ProphecyCollectionService Create(Color color) => new ProphecyCollectionService(color);
     }
 }

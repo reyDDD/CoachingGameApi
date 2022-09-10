@@ -8,15 +8,13 @@ namespace TamboliyaApi.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-
         }
 
-        public DbSet<SideOfDodecahedron> SideOfDodecahedrons { get; set; }
-        public DbSet<ActualPositionOnTheMap> ActualPositionsOnTheMap { get; set; }
-        public DbSet<ActualPositionsOnMapForSelect> ActualPositionsOnMapForSelect { get; set; }
-        public DbSet<Game> Games { get; set; }
-        public DbSet<InitialGameData> InitialGamesData { get; set; }
-        public DbSet<GameLog> GameLogs { get; set; }
+        public DbSet<SideOfDodecahedron> SideOfDodecahedrons { get; set; } = null!;
+        public DbSet<ActualPositionOnTheMap> ActualPositionsOnTheMap { get; set; } = null!;
+        public DbSet<Game> Games { get; set; } = null!;
+        public DbSet<InitialGameData> InitialGamesData { get; set; } = null!;
+        public DbSet<GameLog> GameLogs { get; set; } = null!;
 
 
 
@@ -24,10 +22,6 @@ namespace TamboliyaApi.Data
         {
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Number).IsRequired(); });
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Color).IsRequired(); });
-            modelBuilder.Entity<ActualPositionsOnMapForSelect>()
-                .HasOne(x=>x.Game)
-                .WithMany(x=>x.ActualPositionsForSelect)
-                .HasForeignKey(x=>x.GameId);
             modelBuilder.Entity<Game>()
                 .HasOne(x => x.InitialGameData)
                 .WithOne(x => x.Game);
