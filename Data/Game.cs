@@ -8,8 +8,7 @@ namespace TamboliyaApi.Data
         public int Id { get; set; }
         public Guid? UserId { get; set; }
         public bool IsFinished { get; set; } = false;
-        public InitialGameData InitialGameData { get; set; } = null!;
-        public ActualPositionOnTheMap ActualPosition { get; set; } = null!;
-        //public List<ActualPositionsOnMapForSelect>? ActualPositionsForSelect { get; set; }
+        public virtual InitialGameData InitialGameData { get; set; } = null!;
+        public virtual ActualPositionOnTheMap ActualPosition { get; set; } = null!;
     }
 }

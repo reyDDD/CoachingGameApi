@@ -72,6 +72,7 @@ namespace TamboliyaApi.Services
                     PositionNumber = newGame.ActualPosition.PositionNumber,
                     RegionOnMap = newGame.ActualPosition.RegionOnMap
                 },
+                Oracle = InitialGameDataToOracleDTO(newGame.InitialGameData)
             };
             return game;
         }

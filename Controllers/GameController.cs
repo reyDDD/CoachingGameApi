@@ -48,6 +48,27 @@ namespace TamboliyaApi.Controllers
             return CreatedAtAction(nameof(StartNewGame), game.InitialGameData.InitialGameDataToOracleDTO());
         }
 
+        /// <summary>
+        /// Get info about game
+        /// </summary>
+        /// <param name="gameId">Game Id</param>
+        /// <returns>Info about game</returns>
+        [HttpGet]
+        [Route("info")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<GameDTO> GetInfoAboutGame(int gameId)
+        {
+            var actualGame = unitOfWork.GameRepository
+                .Get(game => game.Id == gameId, includeProperties: "ActualPosition,InitialGameData").FirstOrDefault();
+
+            if (actualGame == null) return new BadRequestObjectResult($"Game with id {gameId} not found");
+
+            var gameDTO = actualGame!.GameToGameDTO()!;
+            return Ok(gameDTO);
+        }
+
 
         /// <summary>
         /// Go to next step (make a move)
@@ -56,8 +77,8 @@ namespace TamboliyaApi.Controllers
         /// <returns>DTO model with new position at the game</returns>
         /// <remarks>Sample request:
         /// {
-        ///     "GameId": "PASSPORT",
-        ///     "ActionType": 0,
+        ///     "GameId": 1,
+        ///     "ActionType": 2,
         ///     "UserId" : "0000-0000-0000-0000-0000",
         ///     "RegionOnMap": 0,
         ///     "PositionNumber" : null

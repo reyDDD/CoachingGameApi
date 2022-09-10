@@ -1,4 +1,5 @@
 ﻿using TamboliyaApi.Data;
+using TamboliyaApi.GameLogic.ModelDTOs;
 using TamboliyaApi.GameLogic.Models;
 
 namespace TamboliyaApi.GameLogic.DAL
@@ -8,6 +9,6 @@ namespace TamboliyaApi.GameLogic.DAL
         public int GameId { get; set; }
         public bool IsFinished { get; set; }
         public ActualPositionOnMap ActualPosition { get; set; } = null!;
-        public List<ActualPositionOnMap>? ActualPositionsForSelect { get; set; }
+        public OracleDTO? Oracle { get; set; }
     }
 }
