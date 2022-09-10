@@ -28,19 +28,7 @@ namespace TamboliyaApi.Services
         }
 
 
-        public static ActualPositionsOnMapForSelect PositionDALToActualPosition(this ActualPositionOnMap position, Game game)
-        {
-            ActualPositionsOnMapForSelect basePosition = new()
-            {
-                RegionOnMap = position.RegionOnMap,
-                PositionNumber = position.PositionNumber,
-                Description = position.Description,
-                IsSelected = position.IsSelected,
-                Game = game
-            };
-
-            return basePosition;
-        }
+        
 
         public static Game NewGameToGame(this NewGame newGame)
         {
