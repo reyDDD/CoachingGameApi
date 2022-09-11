@@ -68,7 +68,7 @@ namespace TamboliyaApi.GameLogic
             {
                 for (int i = 0; i < newGame.ActualPositionsForSelect.Count(); i++)
                 {
-                    if (newGame.ActualPositionsForSelect[i].IsSelected)
+                    if (newGame.ActualPositionsForSelect[i].IsSelected!.Value)
                     {
                         actualPositionOnMap.PositionNumber = newGame.ActualPositionsForSelect[i].PositionNumber;
                         actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
