@@ -6,7 +6,7 @@ namespace TamboliyaApi.Data
     {
         [Key]
         public int Id { get; set; }
-        public Guid? UserId { get; set; }
+        public Guid? UserId { get; set; } = new Guid();
         public bool IsFinished { get; set; } = false;
         public virtual InitialGameData InitialGameData { get; set; } = null!;
         public virtual ActualPositionOnTheMap ActualPosition { get; set; } = null!;

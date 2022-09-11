@@ -305,8 +305,13 @@ namespace TamboliyaApi.GameLogic
             if (positionNumber > 0 && positionNumber < 12 && nextStepRegion != RegionOnMap.Embodiment)
             {
                 actualPositionOnMap.PositionNumber = positionNumber + 1;
-                actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
+
+                string prophecy = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
+				int separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
+				var textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+
+				actualPositionOnMap.Description = textMessage;
             }
             else if (positionNumber == 12 && nextStepRegion != RegionOnMap.Embodiment)
             {
@@ -324,8 +329,13 @@ namespace TamboliyaApi.GameLogic
 
                 actualPositionOnMap.RegionOnMap = nextStepRegion;
                 actualPositionOnMap.PositionNumber = (int)stepPositionNumberOnNextRegionMap;
-                actualPositionOnMap.Description = (await File.ReadAllLinesAsync(path))
+
+                string prophecy = (await File.ReadAllLinesAsync(path))
                     .First(line => line.StartsWith(actualPositionOnMap.PositionNumber + " —"));
+				int separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
+				var textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+
+				actualPositionOnMap.Description = textMessage;
             }
 
             return actualPositionOnMap!;
@@ -334,29 +344,41 @@ namespace TamboliyaApi.GameLogic
 
         private async Task AddActualPositionOnLandOfClarityToList(NewGame game, string path)
         {
-            game.ActualPositionsForSelect.Add(new()
+
+			string prophecy = (await File.ReadAllLinesAsync(path))
+					.First(line => line.StartsWith((int)Embodiment.TeacherFriend + " —"));
+			int separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
+			var textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+			game.ActualPositionsForSelect.Add(new()
             {
                 PositionNumber = (int)Embodiment.TeacherFriend,
                 RegionOnMap = RegionOnMap.Embodiment,
-                Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)Embodiment.TeacherFriend + " —"))
-            });
+                Description = textMessage
+			});
 
-            game.ActualPositionsForSelect.Add(new()
+
+			prophecy = (await File.ReadAllLinesAsync(path))
+					.First(line => line.StartsWith((int)Embodiment.PilgrimWanderer + " —"));
+			separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
+			textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+			game.ActualPositionsForSelect.Add(new()
             {
                 PositionNumber = (int)Embodiment.PilgrimWanderer,
                 RegionOnMap = RegionOnMap.Embodiment,
-                Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)Embodiment.PilgrimWanderer + " —"))
-            });
+                Description = textMessage
+			});
 
-            game.ActualPositionsForSelect.Add(new()
+
+			prophecy = (await File.ReadAllLinesAsync(path))
+					.First(line => line.StartsWith((int)Embodiment.HermitMystic + " —"));
+			separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
+			textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+			game.ActualPositionsForSelect.Add(new()
             {
                 PositionNumber = (int)Embodiment.HermitMystic,
                 RegionOnMap = RegionOnMap.Embodiment,
-                Description = (await File.ReadAllLinesAsync(path))
-                    .First(line => line.StartsWith((int)Embodiment.HermitMystic + " —"))
-            });
+                Description = textMessage
+			});
         }
     }
 }

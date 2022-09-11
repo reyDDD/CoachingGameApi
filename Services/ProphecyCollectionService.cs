@@ -33,7 +33,7 @@ namespace TamboliyaApi.Services
             if (PropheciesCollection[color].Count() == 0)
             {
                 var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
-                PropheciesCollection[color] = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, "Cards", @$"{color}.txt"))).ToList();
+                PropheciesCollection[color] = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, $"{color}.txt"))).ToList();
             }
 
             var random = new Random();

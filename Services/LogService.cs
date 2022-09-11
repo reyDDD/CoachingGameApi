@@ -87,7 +87,7 @@ namespace TamboliyaApi.Services
         {
             var logMessage = new GameLog
             {
-                Message = $"Підказка-передбачення на шляху {game.ActualPosition.RegionOnMap} -  {message}",
+                Message = $"Подія на шляху {game.ActualPosition.RegionOnMap} -  {message}",
                 UserId = game.UserId,
                 Game = game
             };
