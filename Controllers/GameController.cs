@@ -121,26 +121,34 @@ namespace TamboliyaApi.Controllers
 				moveModel.RegionOnMap != RegionOnMap.Embodiment)
 				)
 			{
-
 				return BadRequest("В цій області карти рух далі можливий виключно існуючою дорогою далі по " +
 					"зоні Втілення або в будь-яку вибрану позицію на Землі Ясності");
 			}
 
-			if ((game.ActualPosition.RegionOnMap == RegionOnMap.InnerHomePath && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep) ||
-				(game.ActualPosition.RegionOnMap == RegionOnMap.Delusion && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep) ||
-				(game.ActualPosition.RegionOnMap == RegionOnMap.MysticalPath && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep) ||
-				(game.ActualPosition.RegionOnMap == RegionOnMap.OrganizationalPath && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep) ||
-				(game.ActualPosition.RegionOnMap == RegionOnMap.PersonalPath && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep)
-				)
+			if
+				((game.ActualPosition.RegionOnMap == RegionOnMap.InnerHomePath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.Delusion ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.MysticalPath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.OrganizationalPath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.PersonalPath) && game.ActualPosition.PositionNumber == 12 && moveModel.ActionType != ActionType.NewStep)
 			{
 				return BadRequest("З цієї точки можливий перехід на слідуючий крок - конкретну позицію на Землі Ясності. Кидати кость або довільно перміщуватись не можна");
 			}
 
-			if (moveModel.RegionOnMap != RegionOnMap.NotSet &&
-				moveModel.PositionNumber != null && moveModel.PositionNumber != 0)
+			if ((game.ActualPosition.RegionOnMap == RegionOnMap.InnerHomePath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.Delusion ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.MysticalPath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.OrganizationalPath ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.PersonalPath) && game.ActualPosition.PositionNumber == 12)
+			{
+				await newGame.GoToNewStage(game);
+			}
+			else if (moveModel.ActionType == ActionType.GoToSelectPosition && 
+				moveModel.RegionOnMap != RegionOnMap.NotSet &&
+				moveModel.PositionNumber.HasValue && moveModel.PositionNumber > 0)
 			{
 				await newGame.GoToNewPositionOnTheMap(moveModel.RegionOnMap,
-					moveModel.PositionNumber!.Value);
+					moveModel.PositionNumber.Value);
 			}
 			else if (moveModel.ActionType == ActionType.RandomAction)
 			{
