@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.GameLogic.Models
 {

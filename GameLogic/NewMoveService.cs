@@ -2,6 +2,7 @@
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.GameLogic
 {

@@ -1,4 +1,5 @@
 ﻿using TamboliyaApi.GameLogic.Models;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.GameLogic
 {

@@ -7,6 +7,8 @@ using TamboliyaApi.GameLogic;
 using TamboliyaApi.GameLogic.DAL;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
+using TamboliyaLibrary.DAL;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {

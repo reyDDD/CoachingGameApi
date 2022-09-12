@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TamboliyaApi.GameLogic.Models;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Data
 {

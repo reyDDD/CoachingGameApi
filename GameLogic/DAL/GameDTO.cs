@@ -1,6 +1,5 @@
-﻿using TamboliyaApi.Data;
-using TamboliyaApi.GameLogic.ModelDTOs;
-using TamboliyaApi.GameLogic.Models;
+﻿using TamboliyaApi.GameLogic.Models;
+using TamboliyaLibrary.DAL;
 
 namespace TamboliyaApi.GameLogic.DAL
 {

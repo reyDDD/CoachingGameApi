@@ -2,8 +2,8 @@
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.GameLogic.DAL;
-using TamboliyaApi.GameLogic.ModelDTOs;
 using TamboliyaApi.GameLogic.Models;
+using TamboliyaLibrary.DAL;
 
 namespace TamboliyaApi.Services
 {
