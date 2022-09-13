@@ -30,4 +30,8 @@
     <ProjectReference Include="..\Tamboliya\TamboliyaLibrary\TamboliyaLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GameLogic\DAL\" />
+  </ItemGroup>
+
 </Project>

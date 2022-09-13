@@ -1,16 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using TamboliyaApi.Data;
+﻿using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
-using TamboliyaApi.GameLogic.DAL;
-using TamboliyaApi.GameLogic.Models;
 using TamboliyaLibrary.DAL;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Services
 {
     public static class ModelsCast
     {
 
-        public static OracleDTO InitialGameDataToOracleDTO(this InitialGameData oracle)
+		public static string prefixImages = "images/";
+
+		public static string GetPath(RegionOnMap regionOnMap, int stepOnPath)
+		{
+
+			return prefixImages + regionOnMap switch
+			{
+				RegionOnMap.MysticalPath => stepOnPath switch
+				{
+					> 0 and <= 8 => GamePathes.MysticalPath_1_8,
+					> 8 and <= 12 => GamePathes.MysticalPath_9_12,
+				},
+
+				_ => throw new ArgumentException("branch is unknown")
+			};
+		}
+
+
+		public static OracleDTO InitialGameDataToOracleDTO(this InitialGameData oracle)
         {
             OracleDTO oracleDTO = new()
             {
@@ -22,8 +38,9 @@ namespace TamboliyaApi.Services
                 ChainLinks = oracle.ChainLinks,
                 ExitPath = oracle.ExitPath,
                 StepOnPath = oracle.StepOnPath,
-                RegionOnMap = oracle.RegionOnMap
-            };
+                RegionOnMap = oracle.RegionOnMap,
+                PathToImage = GetPath(oracle.RegionOnMap, oracle.StepOnPath)
+			};
 
             return oracleDTO;
         }
@@ -78,7 +95,8 @@ namespace TamboliyaApi.Services
                     IsSelected = null
                 },
                 Oracle = InitialGameDataToOracleDTO(newGame.InitialGameData),
-                ActualPositionsForSelect = listPositionForSelect
+                ActualPositionsForSelect = listPositionForSelect,
+                PathToImage = GetPath(newGame.ActualPosition.RegionOnMap, newGame.ActualPosition.PositionNumber)
             };
             return game;
         }

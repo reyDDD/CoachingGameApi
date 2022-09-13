@@ -22,5 +22,8 @@
         public const string RedCard = "Red.txt";
         public const string GreenCard = "Green.txt";
         public const string YellowCard = "Yellow.txt";
-    }
+
+		public const string MysticalPath_1_8 = "MysticalPath_1_8.jpg";
+		public const string MysticalPath_9_12 = "MysticalPath_9_12.jpg";
+	}
 }

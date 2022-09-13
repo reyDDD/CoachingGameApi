@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
-using TamboliyaApi.GameLogic.DAL;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
@@ -20,6 +17,7 @@ namespace TamboliyaApi.Controllers
 		private readonly NewGame newGame;
 		private readonly UnitOfWork unitOfWork;
 		private readonly LogService logService;
+		
 
 		public GameController(AppDbContext context, NewGame game,
 			UnitOfWork unitOfWork, LogService logService)
@@ -164,7 +162,7 @@ namespace TamboliyaApi.Controllers
 					await newGame.ChooseRandomCard(game);
 				}
 
-				if (newGame.ActualPosition!.CompareBaseFiedls(game.ActualPosition))
+				if (game.CompareBaseFiedls(newGame.ActualPosition))
 				{
 					await newGame.GoToNewStage(game);
 					if (newGame.ActualPositionsForSelect.Count() > 0)

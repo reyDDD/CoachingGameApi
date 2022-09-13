@@ -29,8 +29,6 @@ builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
 builder.Services.AddScoped<LogService>();
 
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
