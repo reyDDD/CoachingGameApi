@@ -17,15 +17,16 @@ namespace TamboliyaApi.Controllers
 		private readonly NewGame newGame;
 		private readonly UnitOfWork unitOfWork;
 		private readonly LogService logService;
-		
+		private readonly ILogger<GameController> logger;
 
 		public GameController(AppDbContext context, NewGame game,
-			UnitOfWork unitOfWork, LogService logService)
+			UnitOfWork unitOfWork, LogService logService, ILogger<GameController> logger)
 		{
 			this.context = context;
 			this.newGame = game;
 			this.unitOfWork = unitOfWork;
 			this.logService = logService;
+			this.logger = logger;
 		}
 
 
@@ -43,9 +44,19 @@ namespace TamboliyaApi.Controllers
 		{
 			var game = (await newGame.GetOracle(question)).NewGameToGame();
 			unitOfWork.GameRepository.Insert(game);
-			logService.AddOracle(game);
+			logService.AddOracle(game, newGame);
 			await unitOfWork.SaveAsync();
-			return CreatedAtAction(nameof(StartNewGame), game.InitialGameData.InitialGameDataToOracleDTO());
+
+			OracleDTO? DTO = default;
+			try
+			{
+				DTO = game.InitialGameData.InitialGameDataToOracleDTO();
+			}
+			catch (Exception ex)
+			{
+				this.logger.LogError(ex, "Error from model converter");
+			}
+			return CreatedAtAction(nameof(StartNewGame), DTO);
 		}
 
 		/// <summary>

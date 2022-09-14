@@ -132,7 +132,17 @@ namespace TamboliyaApi.GameLogic
 
 		public async Task GoToNewPositionOnTheMap(RegionOnMap regionOnMap, int stepNumber)
 		{
-			string pathToCards = regionOnMap switch
+			string pathToCards = GetPathToCards(regionOnMap);
+			string textMessage = await GetProphecyDescriptionAsync(pathToCards, stepNumber);
+
+			ActualPosition.RegionOnMap = regionOnMap;
+			ActualPosition.PositionNumber = stepNumber;
+			ActualPosition.Description = textMessage;
+		}
+
+		public string GetPathToCards(RegionOnMap regionOnMap)
+		{
+			return regionOnMap switch
 			{
 				RegionOnMap.LandOfClarity => GamePathes.mapLandOfClarityPath,
 				RegionOnMap.OrganizationalPath => GamePathes.mapOrganizationalPath,
@@ -142,24 +152,18 @@ namespace TamboliyaApi.GameLogic
 				RegionOnMap.Delusion => GamePathes.mapDelusionPath,
 				_ => throw new ArgumentException("RegionOnMap isn't correct", regionOnMap.ToString())
 			};
+		}
 
-
+		public async Task<string> GetProphecyDescriptionAsync(string pathToCards, int stepNumber)
+		{
 			var rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
 			var path = Path.Combine(rootFolder, pathToCards);
 			var prophecies = (await File.ReadAllLinesAsync(path)).ToList();
 			string prophecy = prophecies.Where(m => m.StartsWith($"{stepNumber} — ")).First();
 
 			int separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
-			var textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
-
-			ActualPosition.RegionOnMap = regionOnMap;
-			ActualPosition.Description = textMessage;
-			ActualPosition.PositionNumber = stepNumber;
+			string textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
+			return textMessage;
 		}
-
-
-
-
-
 	}
 }

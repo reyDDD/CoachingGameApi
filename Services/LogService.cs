@@ -1,4 +1,5 @@
 ﻿using TamboliyaApi.Data;
+using TamboliyaApi.GameLogic;
 
 namespace TamboliyaApi.Services
 {
@@ -11,7 +12,7 @@ namespace TamboliyaApi.Services
             this.unitOfWork = unitOfWork;
         }
 
-        public void AddOracle(Game game)
+        public async void AddOracle(Game game, NewGame gameService)
         {
             var logQuestion = new GameLog
             {
@@ -61,10 +62,12 @@ namespace TamboliyaApi.Services
             };
             unitOfWork.GameLog.Insert(logExitPath);
 
+            string path = gameService.GetPathToCards(game.InitialGameData.RegionOnMap);
+            string positionDescription = await gameService.GetProphecyDescriptionAsync(path, game.InitialGameData.StepOnPath);
 
-            var logStepOnPath = new GameLog
+			var logStepOnPath = new GameLog
             {
-                Message = "Позиція на шляху - " + game.ActualPosition.Description,
+                Message = "Позиція на шляху - " + positionDescription,
                 UserId = game.UserId,
                 Game = game
             };
