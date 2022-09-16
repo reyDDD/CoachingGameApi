@@ -33,7 +33,7 @@ namespace TamboliyaApi.Services
 
 		public static Coordinates GetCoordinates(RegionOnMap regionOnMap, int stepOnPath)
 		{
-			return regionOnMap switch
+			Coordinates coordinates = regionOnMap switch
 			{
 				RegionOnMap.MysticalPath => stepOnPath switch
 				{
@@ -53,7 +53,7 @@ namespace TamboliyaApi.Services
 				},
 				RegionOnMap.Embodiment => stepOnPath switch
 				{
-					1 => new Coordinates(700, 409),
+					1 => new Coordinates(700, 415),
 					2 => new Coordinates(745, 331),
 					3 => new Coordinates(811, 413),
 					4 => new Coordinates(815, 344),
@@ -69,92 +69,94 @@ namespace TamboliyaApi.Services
 				},
 				RegionOnMap.LandOfClarity => stepOnPath switch
 				{
-					1 => new Coordinates(394, 484),
-					2 => new Coordinates(417, 201),
-					3 => new Coordinates(484, 269),
-					4 => new Coordinates(457, 391),
-					5 => new Coordinates(526, 416),
-					6 => new Coordinates(609, 446),
-					7 => new Coordinates(842, 445),
-					8 => new Coordinates(909, 383),
-					9 => new Coordinates(740, 237),
-					10 => new Coordinates(829, 268),
-					11 => new Coordinates(1077, 257),
-					12 => new Coordinates(11024, 338),
-					13 => new Coordinates(916, 290),
-					14 => new Coordinates(799, 75),
-					15 => new Coordinates(1024, 190),
-					16 => new Coordinates(906, 39),
-					17 => new Coordinates(1119, 501),
-					18 => new Coordinates(1110, 568),
+					1 => new Coordinates(335, 415),
+					2 => new Coordinates(357, 166),
+					3 => new Coordinates(418, 228),
+					4 => new Coordinates(388, 340),
+					5 => new Coordinates(452, 360),
+					6 => new Coordinates(523, 383),
+					7 => new Coordinates(732, 383),
+					8 => new Coordinates(780, 333),
+					9 => new Coordinates(635, 208),
+					10 => new Coordinates(713, 234),
+					11 => new Coordinates(930, 228),
+					12 => new Coordinates(885, 295),
+					13 => new Coordinates(790, 250),
+					14 => new Coordinates(690, 65),
+					15 => new Coordinates(890, 170),
+					16 => new Coordinates(780, 38),
+					17 => new Coordinates(960, 425),
+					18 => new Coordinates(960, 480),
 					_ => throw new ArgumentException("stepOnPath is not correct")
 				},
 				RegionOnMap.Delusion => stepOnPath switch
 				{
-					1 => new Coordinates(175, 568),
-					2 => new Coordinates(235, 524),
-					3 => new Coordinates(238, 449),
-					4 => new Coordinates(202, 355),
-					5 => new Coordinates(230, 293),
-					6 => new Coordinates(242, 238),
-					7 => new Coordinates(102, 184),
-					8 => new Coordinates(93, 134),
-					9 => new Coordinates(366, 176),
-					10 => new Coordinates(388, 119),
-					11 => new Coordinates(252, 150),
-					12 => new Coordinates(244, 96),
+					1 => new Coordinates(174, 490),
+					2 => new Coordinates(202, 448),
+					3 => new Coordinates(204, 380),
+					4 => new Coordinates(180, 302),
+					5 => new Coordinates(201, 253),
+					6 => new Coordinates(208, 205),
+					7 => new Coordinates(85, 159),
+					8 => new Coordinates(77, 116),
+					9 => new Coordinates(311, 153),
+					10 => new Coordinates(340, 111),
+					11 => new Coordinates(210, 130),
+					12 => new Coordinates(208, 88),
 					_ => throw new ArgumentException("stepOnPath is not correct")
 				},
 				RegionOnMap.InnerHomePath => stepOnPath switch
 				{
-					1 => new Coordinates(178, 280),
-					2 => new Coordinates(178, 261),
-					3 => new Coordinates(178, 241),
-					4 => new Coordinates(174, 152),
-					5 => new Coordinates(209, 152),
-					6 => new Coordinates(244, 152),
-					7 => new Coordinates(276, 152),
-					8 => new Coordinates(309, 152),
-					9 => new Coordinates(189, 123),
-					10 => new Coordinates(192, 104),
-					11 => new Coordinates(196, 93),
-					12 => new Coordinates(243, 72),
+					1 => new Coordinates(157, 241),
+					2 => new Coordinates(154, 225),
+					3 => new Coordinates(155, 210),
+					4 => new Coordinates(149, 166),
+					5 => new Coordinates(180, 166),
+					6 => new Coordinates(210, 166),
+					7 => new Coordinates(240, 166),
+					8 => new Coordinates(270, 166),
+					9 => new Coordinates(165, 105),
+					10 => new Coordinates(163, 90),
+					11 => new Coordinates(165, 80),
+					12 => new Coordinates(206, 52),
 					_ => throw new ArgumentException("stepOnPath is not correct")
 				},
 				RegionOnMap.PersonalPath => stepOnPath switch
 				{
-					1 => new Coordinates(438, 388),
-					2 => new Coordinates(460, 420),
-					3 => new Coordinates(416, 446),
-					4 => new Coordinates(400, 390),
-					5 => new Coordinates(450, 360),
-					6 => new Coordinates(500, 380),
-					7 => new Coordinates(496, 448),
-					8 => new Coordinates(430, 484),
-					9 => new Coordinates(360, 450),
-					10 => new Coordinates(370, 370),
-					11 => new Coordinates(425, 307),
-					12 => new Coordinates(479, 298),
+					1 => new Coordinates(384, 338),
+					2 => new Coordinates(396, 369),
+					3 => new Coordinates(356, 383),
+					4 => new Coordinates(347, 340),
+					5 => new Coordinates(385, 305),
+					6 => new Coordinates(430, 330),
+					7 => new Coordinates(424, 386),
+					8 => new Coordinates(370, 417),
+					9 => new Coordinates(307, 383),
+					10 => new Coordinates(311, 316),
+					11 => new Coordinates(366, 265),
+					12 => new Coordinates(420, 260),
 					_ => throw new ArgumentException("stepOnPath is not correct")
 				},
 				RegionOnMap.OrganizationalPath => stepOnPath switch
 				{
-					1 => new Coordinates(59, 531),
-					2 => new Coordinates(51, 511),
-					3 => new Coordinates(39, 492),
-					4 => new Coordinates(46, 480),
-					5 => new Coordinates(28, 455),
-					6 => new Coordinates(30, 445),
-					7 => new Coordinates(19, 426),
-					8 => new Coordinates(32, 410),
-					9 => new Coordinates(32, 393),
-					10 => new Coordinates(23, 376),
-					11 => new Coordinates(31, 364),
-					12 => new Coordinates(64, 305),
+					1 => new Coordinates(70, 462),
+					2 => new Coordinates(65, 444),
+					3 => new Coordinates(63, 431),
+					4 => new Coordinates(68, 420),
+					5 => new Coordinates(78, 402),
+					6 => new Coordinates(67, 388),
+					7 => new Coordinates(64, 374),
+					8 => new Coordinates(72, 353),
+					9 => new Coordinates(77, 341),
+					10 => new Coordinates(75, 328),
+					11 => new Coordinates(79, 314),
+					12 => new Coordinates(64, 259),
 					_ => throw new ArgumentException("stepOnPath is not correct")
 				},
 				_ => throw new ArgumentException("branch is unknown")
 			};
+
+			return new Coordinates(coordinates.x - 14, coordinates.y - 29);
 		}
 
 		public static OracleDTO InitialGameDataToOracleDTO(this InitialGameData oracle)

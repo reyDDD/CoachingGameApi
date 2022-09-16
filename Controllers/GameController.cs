@@ -44,7 +44,7 @@ namespace TamboliyaApi.Controllers
 		{
 			var game = (await newGame.GetOracle(question)).NewGameToGame();
 			unitOfWork.GameRepository.Insert(game);
-			logService.AddOracle(game, newGame);
+			await logService.AddOracle(game, newGame);
 			await unitOfWork.SaveAsync();
 
 			OracleDTO? DTO = default;
@@ -116,7 +116,10 @@ namespace TamboliyaApi.Controllers
 			newGame.ActualPosition = game.ActualPosition.ActualPositionOnMapToDTO();
 
 			if (game.ActualPosition.RegionOnMap == RegionOnMap.Embodiment &&
-				moveModel.ActionType != ActionType.NewStep)
+				moveModel.ActionType != ActionType.NewStep ||
+				game.ActualPosition.RegionOnMap == RegionOnMap.LandOfClarity &&
+				moveModel.ActionType == ActionType.RandomAction
+				)
 			{
 				return BadRequest("В цій області карти рух далі можливий виключно існуючою дорогою");
 			}

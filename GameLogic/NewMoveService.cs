@@ -101,7 +101,7 @@ namespace TamboliyaApi.GameLogic
 				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.WhereForceComeIn)
 				{
-					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhoYourPartner;
+					actualPositionOnMap.PositionNumber = (int)LandOfClarity.DifferenceGoodAndEvil;
 				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.DifferenceGoodAndEvil)
 				{
@@ -133,25 +133,31 @@ namespace TamboliyaApi.GameLogic
 				{
 					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhoTeaches;
 				}
-				else if ((LandOfClarity)positionNumber == LandOfClarity.WhoTeaches)
-				{
-					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
-				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourIsland)
 				{
 					actualPositionOnMap.PositionNumber = (int)LandOfClarity.NameYourBoat;
-				}
-				else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourBoat)
-				{
-					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
 				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.WhoSees)
 				{
 					actualPositionOnMap.PositionNumber = (int)LandOfClarity.NameYourBridge;
 				}
+				else if ((LandOfClarity)positionNumber == LandOfClarity.WhoTeaches)
+				{
+					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
+					await AddActualPositionOnLandOfClarityToList(newGame);
+					logService.AddRecord(game, selectEmbodimentMessage);
+				}
+				else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourBoat)
+				{
+					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
+					await AddActualPositionOnLandOfClarityToList(newGame);
+					logService.AddRecord(game, selectEmbodimentMessage);
+				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.NameYourBridge)
 				{
-					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere; ;
+					actualPositionOnMap.PositionNumber = (int)LandOfClarity.WhatAmIDoingHere;
+					await AddActualPositionOnLandOfClarityToList(newGame);
+					logService.AddRecord(game, selectEmbodimentMessage);
 				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.WhatIsSerenity)
 				{
@@ -173,15 +179,8 @@ namespace TamboliyaApi.GameLogic
 				}
 				else if ((LandOfClarity)positionNumber == LandOfClarity.WhatAmIDoingHere)
 				{
-					path = Path.Combine(rootFolder, GamePathes.mapEmbodimentPath);
-					await AddActualPositionOnLandOfClarityToList(newGame, path);
-
-					actualPositionOnMap.PositionNumber = game.ActualPosition.PositionNumber;
-					actualPositionOnMap.RegionOnMap = game.ActualPosition.RegionOnMap;
-					actualPositionOnMap.Description = game.ActualPosition.Description;
-
+					await AddActualPositionOnLandOfClarityToList(newGame);
 					logService.AddRecord(game, selectEmbodimentMessage);
-					return actualPositionOnMap;
 				}
 
 				string desc = (await File.ReadAllLinesAsync(path))
@@ -319,41 +318,42 @@ namespace TamboliyaApi.GameLogic
 		}
 
 
-		private async Task AddActualPositionOnLandOfClarityToList(NewGame game, string path)
+		private async Task AddActualPositionOnLandOfClarityToList(NewGame game)
 		{
-
+			string rootFolder = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix);
+			var path = Path.Combine(rootFolder, GamePathes.mapLandOfClarityPath);
 			string prophecy = (await File.ReadAllLinesAsync(path))
-					.First(line => line.StartsWith((int)Embodiment.TeacherFriend + " —"));
+					.First(line => line.StartsWith((int)LandOfClarity.WhatIsSerenity + " —"));
 			int separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
 			var textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
 			game.ActualPositionsForSelect.Add(new()
 			{
-				PositionNumber = (int)Embodiment.TeacherFriend,
-				RegionOnMap = RegionOnMap.Embodiment,
+				PositionNumber = (int)LandOfClarity.WhatIsSerenity,
+				RegionOnMap = RegionOnMap.LandOfClarity,
 				Description = textMessage
 			});
 
 
 			prophecy = (await File.ReadAllLinesAsync(path))
-					.First(line => line.StartsWith((int)Embodiment.PilgrimWanderer + " —"));
+					.First(line => line.StartsWith((int)LandOfClarity.WhereLoveComeFrom + " —"));
 			separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
 			textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
 			game.ActualPositionsForSelect.Add(new()
 			{
-				PositionNumber = (int)Embodiment.PilgrimWanderer,
-				RegionOnMap = RegionOnMap.Embodiment,
+				PositionNumber = (int)LandOfClarity.WhereLoveComeFrom,
+				RegionOnMap = RegionOnMap.LandOfClarity,
 				Description = textMessage
 			});
 
 
 			prophecy = (await File.ReadAllLinesAsync(path))
-					.First(line => line.StartsWith((int)Embodiment.HermitMystic + " —"));
+					.First(line => line.StartsWith((int)LandOfClarity.WhoResponsibleForTeachings + " —"));
 			separatorIndex = (prophecy.IndexOf('—')) != -1 ? prophecy.IndexOf('—') + 2 : 0;
 			textMessage = prophecy.AsSpan()[separatorIndex..(prophecy.Length - 1)].ToString();
 			game.ActualPositionsForSelect.Add(new()
 			{
-				PositionNumber = (int)Embodiment.HermitMystic,
-				RegionOnMap = RegionOnMap.Embodiment,
+				PositionNumber = (int)LandOfClarity.WhoResponsibleForTeachings,
+				RegionOnMap = RegionOnMap.LandOfClarity,
 				Description = textMessage
 			});
 		}

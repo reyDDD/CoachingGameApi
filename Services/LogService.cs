@@ -12,7 +12,7 @@ namespace TamboliyaApi.Services
             this.unitOfWork = unitOfWork;
         }
 
-        public async void AddOracle(Game game, NewGame gameService)
+        public async Task AddOracle(Game game, NewGame gameService)
         {
             var logQuestion = new GameLog
             {

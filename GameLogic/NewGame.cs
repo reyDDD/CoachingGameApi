@@ -90,12 +90,12 @@ namespace TamboliyaApi.GameLogic
 
 			if (executeInstruction)
 			{
-				await FollowInstructionsOnCard(prompt);
+				await FollowInstructionsOnCard(prompt, game);
 			}
 			return prompt;
 		}
 
-		private async Task FollowInstructionsOnCard(string prompt)
+		private async Task FollowInstructionsOnCard(string prompt, Game game)
 		{
 			string throwDice = "Брось игральную кость";
 			string gateToLandOfClarity = "Отправляйся к воротам на Земле Ясности";
@@ -115,6 +115,7 @@ namespace TamboliyaApi.GameLogic
 			else if (prompt == whatAmIDoingHere)
 			{
 				await GoToNewPositionOnTheMap(RegionOnMap.LandOfClarity, (int)LandOfClarity.WhatAmIDoingHere);
+				await newMoveService.MakeMoveAsync(this, game);
 			}
 			else if (prompt.Contains(goToOrganizationalGrowth))
 			{
@@ -150,6 +151,7 @@ namespace TamboliyaApi.GameLogic
 				RegionOnMap.InnerHomePath => GamePathes.mapInnerHomePath,
 				RegionOnMap.Embodiment => GamePathes.mapEmbodimentPath,
 				RegionOnMap.Delusion => GamePathes.mapDelusionPath,
+				RegionOnMap.MysticalPath => GamePathes.mapMysticalPath,
 				_ => throw new ArgumentException("RegionOnMap isn't correct", regionOnMap.ToString())
 			};
 		}

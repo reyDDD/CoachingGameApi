@@ -8,10 +8,12 @@ namespace TamboliyaApi.Services
     public class ProphecyCollectionService
     {
         public Dictionary<Color, List<string>> PropheciesCollection { get; set; } = new();
+		private readonly RandomService randomService;
 
-        public ProphecyCollectionService()
+		public ProphecyCollectionService(RandomService randomService)
         {
             InitProphecies();
+            this.randomService = randomService;
         }
 
         public void InitProphecies()
@@ -36,8 +38,7 @@ namespace TamboliyaApi.Services
                 PropheciesCollection[color] = (await File.ReadAllLinesAsync(Path.Combine(rootFolder, $"{color}.txt"))).ToList();
             }
 
-            var random = new Random();
-            var index = random.Next(0, PropheciesCollection[color].Count());
+            var index = randomService.RandomNumber(0, PropheciesCollection[color].Count() - 1);
             var prophecy = PropheciesCollection[color][index];
             PropheciesCollection[color].RemoveAt(index);
             return prophecy;

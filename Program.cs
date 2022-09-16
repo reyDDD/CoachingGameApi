@@ -20,14 +20,17 @@ builder.Services.AddSwaggerGen(c =>
     c.SchemaFilter<EnumSchemaFilter>();
 });
 
-builder.Services.AddScoped<UnitOfWork>();
+
 builder.Services.AddSingleton<ProphecyCollectionService>();
+builder.Services.AddSingleton<RandomService>();
+builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddScoped<Dodecahedron>();
 builder.Services.AddScoped<Oracle>();
 builder.Services.AddScoped<ChooseRandomActionService>();
 builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
 builder.Services.AddScoped<LogService>();
+
 
 var app = builder.Build();
 
