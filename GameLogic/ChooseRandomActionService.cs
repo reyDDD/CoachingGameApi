@@ -46,13 +46,13 @@ namespace TamboliyaApi.GameLogic
                     break;
                 case 3:
                     //ToDo: реализовать ветвь Просветление. Вы можете в любой момент переместить фишку на любое поле карты по собственному выбору.
-                    break;
+                    //break;
                 case 4:
                     //ToDo: реализовать ветвь Время подумать о чем-то другом. Пропустите ход.
-                    break;
+                    //break;
                 case 5:
                     //ToDo: реализовать ветвь Глубокая медитация: пропустите ход.
-                    break;
+                    //break;
                 case 6:
                     var prophecyInfo = await Oracle.StepWithNumber(GamePathes.mapLandOfClarityPath, dodecahedron);
 

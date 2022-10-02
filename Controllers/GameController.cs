@@ -220,7 +220,7 @@ namespace TamboliyaApi.Controllers
 		[Produces("application/json")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<string>> FinishTheGame(int gameId)
+		public async Task<ActionResult<string>> FinishTheGame([FromBody]int gameId)
 		{
 			var game = await unitOfWork.GameRepository
 				.GetByIDAsync(game => game.Id == gameId,
@@ -250,7 +250,7 @@ namespace TamboliyaApi.Controllers
 		public async Task<ActionResult<GameLogDTO>> GameLog(int gameId)
 		{
 			var log = await unitOfWork.GameLog.GetAsync(logs => logs.GameId == gameId,
-				orderBy: q => q.OrderBy(d => d.Id));
+				orderBy: q => q.OrderByDescending(d => d.Id));
 			var logCollection = log.Select(x => x.Message).ToList();
 
 			if (logCollection.Count == 0) return BadRequest("Game not found");

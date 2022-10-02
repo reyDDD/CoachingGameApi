@@ -9,15 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDbContext<TamboliyaApi.Data.AppDbContext>(options => options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<TamboliyaApi.Data.AppDbContext>(options =>
+	 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
-    $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
-    c.SchemaFilter<EnumSchemaFilter>();
+	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+	$"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+	c.SchemaFilter<EnumSchemaFilter>();
 });
 
 
@@ -30,6 +31,7 @@ builder.Services.AddScoped<ChooseRandomActionService>();
 builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
 builder.Services.AddScoped<LogService>();
+builder.Services.AddSingleton<PositionsOnMapService>();
 
 
 var app = builder.Build();
@@ -37,14 +39,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseCors(policy =>
-    policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7147", "https://localhost:7112")
-    .AllowAnyMethod()
-    .WithHeaders(HeaderNames.ContentType));
+	policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7147", "https://localhost:7112")
+	.AllowAnyMethod()
+	.WithHeaders(HeaderNames.ContentType));
 
 
 app.UseHttpsRedirection();
