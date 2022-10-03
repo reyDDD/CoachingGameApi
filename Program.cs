@@ -4,6 +4,8 @@ using System.Reflection;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.Services;
+using TamboliyaApi.Hubs;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+	opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
+});
+
+
 builder.Services.AddSingleton<ProphecyCollectionService>();
 builder.Services.AddSingleton<RandomService>();
 builder.Services.AddScoped<UnitOfWork>();
@@ -36,6 +45,9 @@ builder.Services.AddSingleton<PositionsOnMapService>();
 
 var app = builder.Build();
 
+app.UseResponseCompression();
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -46,7 +58,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors(policy =>
 	policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7147", "https://localhost:7112")
 	.AllowAnyMethod()
-	.WithHeaders(HeaderNames.ContentType));
+	//.WithHeaders(HeaderNames.ContentType))
+	.AllowAnyHeader()
+	.AllowCredentials());
 
 
 app.UseHttpsRedirection();
@@ -55,5 +69,5 @@ app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<ChatHub>("/chathub");
 app.Run();

@@ -60,6 +60,7 @@ namespace TamboliyaApi.GameLogic
 
 		public async Task EndOfTheGame(Game game)
 		{
+			//TODO: проявляется ошибка, что не все цвета задач возвращают подсказки. Есть зеленый, желтый, красный, не было синего
 			logService.AddRecord(game, $"Гравець вирішив закінчити гру на даному етапі");
 			Task emotions = GetPrompt(Color.Green, game, false);
 			Task deception = GetPrompt(Color.Yellow, game, false);
