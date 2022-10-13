@@ -16,11 +16,12 @@ builder.Services.AddDbContext<TamboliyaApi.Data.AppDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(swagger =>
 {
-	c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+	swagger.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
 	$"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
-	c.SchemaFilter<EnumSchemaFilter>();
+	swagger.SchemaFilter<EnumSchemaFilter>();
+	swagger.EnableAnnotations();
 });
 
 

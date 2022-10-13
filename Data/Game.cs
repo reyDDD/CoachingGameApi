@@ -8,6 +8,7 @@ namespace TamboliyaApi.Data
 	{
 		[Key]
 		public int Id { get; set; }
+		public DateTime Created { get; set; }
 		public Guid? UserId { get; set; } = new Guid();
 		public bool IsFinished { get; set; } = false;
 		public virtual InitialGameData InitialGameData { get; set; } = null!;

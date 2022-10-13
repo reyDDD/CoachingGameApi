@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Data;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
@@ -80,6 +81,25 @@ namespace TamboliyaApi.Controllers
 			return Ok(gameDTO);
 		}
 
+
+		[SwaggerOperation(
+			Summary = "Get info about user games",
+			Description = "Return user collection of games")]
+		[HttpGet]
+		[Route("gamesInfo")]
+		[Produces("application/json")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<IEnumerable<GameDTO>>> GetInfoAboutGames()
+		{
+			var userGames = (await unitOfWork.GameRepository
+				.GetAsync(includeProperties: "ActualPosition,InitialGameData"));
+
+			if (userGames.Count() == 0) return new BadRequestObjectResult("User games not found");
+
+			var gameDTO = userGames!.Select(x => x.GameToGameDTO()!);
+			return Ok(gameDTO);
+		}
 
 		/// <summary>
 		/// Go to next step (make a move)

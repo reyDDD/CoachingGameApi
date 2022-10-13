@@ -193,7 +193,8 @@ namespace TamboliyaApi.Services
 				ChainLinks = newGame.Oracle.ChainLinks,
 				ExitPath = newGame.Oracle.ExitPath,
 				StepOnPath = newGame.Oracle.StepOnPath,
-				RegionOnMap = newGame.Oracle.RegionOnMap
+				RegionOnMap = newGame.Oracle.RegionOnMap,
+				
 			};
 
 			Game game = new()
@@ -206,7 +207,7 @@ namespace TamboliyaApi.Services
 					PositionNumber = newGame.ActualPosition.PositionNumber,
 					RegionOnMap = newGame.ActualPosition.RegionOnMap
 				},
-
+				Created = DateTime.UtcNow
 			};
 			return game;
 		}
@@ -220,6 +221,7 @@ namespace TamboliyaApi.Services
 			GameDTO game = new()
 			{
 				GameId = newGame.Id,
+				Created = newGame.Created,
 				IsFinished = newGame.IsFinished,
 				ActualPosition = new()
 				{
