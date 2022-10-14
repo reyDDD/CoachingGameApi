@@ -202,7 +202,7 @@ namespace TamboliyaApi.Controllers
 					if (newGame.ActualPositionsForSelect.Count() > 0)
 					{
 						await unitOfWork.SaveAsync();
-						return CreatedAtAction(nameof(MakeMove), game.GameToGameDTO(newGame.ActualPositionsForSelect));
+						return CreatedAtAction(nameof(MakeMove), moveModel.GameId, game.GameToGameDTO(newGame.ActualPositionsForSelect));
 					}
 				}
 			}
@@ -226,7 +226,7 @@ namespace TamboliyaApi.Controllers
 			logService.AddRecord(game);
 			await unitOfWork.SaveAsync();
 
-			return CreatedAtAction(nameof(MakeMove), game.GameToGameDTO(newGame.ActualPositionsForSelect));
+			return CreatedAtAction(nameof(MakeMove), moveModel.GameId, game.GameToGameDTO(newGame.ActualPositionsForSelect));
 		}
 
 

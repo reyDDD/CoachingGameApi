@@ -19,7 +19,7 @@ namespace TamboliyaApi.GameLogic
 		private readonly ChooseRandomActionService chooseRandomAction;
 		private readonly NewMoveService newMoveService;
 		private readonly LogService logService;
-
+		static object keyLock = new object();
 
 		public NewGame(Oracle oracle,
 			ChooseRandomActionService chooseRandomActionService,
@@ -60,7 +60,6 @@ namespace TamboliyaApi.GameLogic
 
 		public async Task EndOfTheGame(Game game)
 		{
-			//TODO: проявляется ошибка, что не все цвета задач возвращают подсказки. Есть зеленый, желтый, красный, не было синего
 			logService.AddRecord(game, $"Гравець вирішив закінчити гру на даному етапі");
 			Task emotions = GetPrompt(Color.Green, game, false);
 			Task deception = GetPrompt(Color.Yellow, game, false);
@@ -83,10 +82,20 @@ namespace TamboliyaApi.GameLogic
 			};
 		}
 
-		private async Task<string> GetPrompt(Color color,
-			Game game, bool executeInstruction = true)
+		private async Task<string> GetPrompt(Color color, Game game, bool executeInstruction = true)
 		{
-			string prompt = await prophecyService.GetProphecyAsync(color);
+			string prompt = String.Empty;
+
+			if (Monitor.TryEnter(Monitor.TryEnter(keyLock, TimeSpan.FromSeconds(15)))) {
+				try
+				{
+					prompt = prophecyService.GetProphecy(color);
+				}
+				finally
+				{
+					Monitor.Exit(keyLock);
+				}
+			}
 			logService.AddRecord(game, @$"Гравець витягнув нову карточку з підказкою: {prompt}");
 
 			if (executeInstruction)

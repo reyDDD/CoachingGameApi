@@ -10,6 +10,7 @@ namespace TamboliyaApi.Services
 	{
 		public Dictionary<Color, List<string>> PropheciesCollection { get; set; } = new();
 		private readonly RandomService randomService;
+		
 
 		public ProphecyCollectionService(RandomService randomService)
 		{
@@ -26,7 +27,7 @@ namespace TamboliyaApi.Services
 
 		}
 
-		public async Task<string> GetProphecyAsync(Color color)
+		public string GetProphecy(Color color)
 		{
 			if (color == Color.NotSet)
 			{
@@ -36,9 +37,10 @@ namespace TamboliyaApi.Services
 			if (PropheciesCollection[color].Count() == 0)
 			{
 				string jsonPath = Path.Combine(Directory.GetCurrentDirectory()!, GamePathes.Prefix, "cards.json");
+
 				using (FileStream jsonLoad = File.Open(jsonPath, FileMode.Open))
 				{
-					var prophecyCollection = (Dictionary<string, List<string>>?)await JsonSerializer.DeserializeAsync(utf8Json: jsonLoad, returnType: typeof(Dictionary<string, List<string>>));
+					var prophecyCollection = (Dictionary<string, List<string>>?)( JsonSerializer.DeserializeAsync(utf8Json: jsonLoad, returnType: typeof(Dictionary<string, List<string>>))).Result;
 
 					PropheciesCollection[color] = prophecyCollection![color.ToString()];
 				}

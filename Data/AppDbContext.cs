@@ -13,10 +13,10 @@ namespace TamboliyaApi.Data
         public DbSet<Game> Games { get; set; } = null!;
         public DbSet<InitialGameData> InitialGamesData { get; set; } = null!;
         public DbSet<GameLog> GameLogs { get; set; } = null!;
+		public DbSet<GameChatLog> GameChatLogs { get; set; } = null!;
 
 
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Number).IsRequired(); });
             modelBuilder.Entity<SideOfDodecahedron>(entity => { entity.Property(e => e.Color).IsRequired(); });

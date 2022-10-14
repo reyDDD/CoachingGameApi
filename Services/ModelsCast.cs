@@ -1,4 +1,5 @@
-﻿using TamboliyaApi.Data;
+﻿using System.Collections.ObjectModel;
+using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
 using TamboliyaLibrary.DAL;
 using TamboliyaLibrary.Models;
@@ -194,7 +195,7 @@ namespace TamboliyaApi.Services
 				ExitPath = newGame.Oracle.ExitPath,
 				StepOnPath = newGame.Oracle.StepOnPath,
 				RegionOnMap = newGame.Oracle.RegionOnMap,
-				
+
 			};
 
 			Game game = new()
@@ -249,6 +250,23 @@ namespace TamboliyaApi.Services
 			};
 
 			return oracleDTO;
+		}
+
+
+		public static LogsDTOModel GameLogsToLogsDTOModel(this IEnumerable<GameChatLog> gameLogs, int gameId, Guid? userId)
+		{
+			var model = new LogsDTOModel
+			{
+				GameId = gameId,
+				UserId = userId,
+				Messages = new HashSet<string>()
+			};
+
+			foreach (var item in gameLogs)
+			{
+				model.Messages.Add(item.Message);
+			} 
+			return model;
 		}
 	}
 }
