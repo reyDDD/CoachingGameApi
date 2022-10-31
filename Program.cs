@@ -28,30 +28,48 @@ builder.Services.AddSwaggerGen(swagger =>
 	swagger.EnableAnnotations();
 });
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+	{
+		options.SignIn.RequireConfirmedAccount = false;
+	})
 				.AddEntityFrameworkStores<AppDbContext>()
 				.AddDefaultTokenProviders();
 
 
 // Adding Authentication  
+var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]);
+
 builder.Services.AddAuthentication(options =>
 {
 	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-// Adding Jwt Bearer  
 .AddJwtBearer(options =>
 {
-	options.SaveToken = true;
-	options.RequireHttpsMetadata = false;
-	options.TokenValidationParameters = new TokenValidationParameters()
+	
+	options.Events = new JwtBearerEvents
 	{
-		ValidateIssuer = true,
-		ValidateAudience = true,
-		ValidAudience = builder.Configuration["JWT:ValidAudience"],
-		ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+		OnTokenValidated = context =>
+		{
+			var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+			var userId = int.Parse(context.Principal.Identity.Name);
+			var user = userService.GetById(userId);
+			if (user == null)
+			{
+				// return unauthorized if user no longer exists
+				context.Fail("Unauthorized");
+			}
+			return Task.CompletedTask;
+		}
+	};
+	options.RequireHttpsMetadata = false;
+	options.SaveToken = true;
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuerSigningKey = true,
+		IssuerSigningKey = new SymmetricSecurityKey(key),
+		ValidateIssuer = false,
+		ValidateAudience = false
 	};
 });
 
@@ -74,6 +92,7 @@ builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
 builder.Services.AddScoped<LogService>();
 builder.Services.AddSingleton<PositionsOnMapService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 var app = builder.Build();
@@ -99,6 +118,7 @@ app.UseCors(policy =>
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

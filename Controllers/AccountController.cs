@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TamboliyaApi.Data;
+using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
 
 namespace TamboliyaApi.Controllers
@@ -15,153 +18,111 @@ namespace TamboliyaApi.Controllers
 	[ApiController]
 	public class AccountController : ControllerBase
 	{
-
 		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly ILogger<AccountController> _logger;
 		private readonly IConfiguration _configuration;
+		private readonly IUserService _userService;
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
 			RoleManager<IdentityRole> roleManager,
 			ILogger<AccountController> logger,
-			IConfiguration configuration)
+			IConfiguration configuration,
+			IUserService userService)
 		{
 			_userManager = userManager;
 			_roleManager = roleManager;
 			_configuration = configuration;
 			_logger = logger;
+			_userService = userService;
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Register(string email, string password)
+		[Route("register")]
+		public async Task<IActionResult> RegisterUser([FromBody] RegisterModel model, string userRoles)
 		{
-			if (!String.IsNullOrEmpty(email) && !String.IsNullOrEmpty(password))
-			{
-				var user = new ApplicationUser { UserName = email, Email = email };
-				var result = await _userManager.CreateAsync(user, password);
-				if (result.Succeeded)
-				{
-					_logger.LogInformation("There is added a new user with password.");
-
-
-				}
-				foreach (var error in result.Errors)
-				{
-					ModelState.AddModelError(string.Empty, error.Description);
-				}
-				return Ok("token");
-			}
-			else
-			{
-				return Ok("token");
-			}
-
-		}
-
-		[Authorize(Roles = UserRoles.Admin)]
-		[HttpPost]
-		[Route("register-user")]
-		public async Task<IActionResult> RegisterUser([FromBody] RegisterModel model)
-		{
-			var userExists = await _userManager.FindByNameAsync(model.Email);
-			if (userExists != null)
-				return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
 			ApplicationUser user = new ApplicationUser()
 			{
 				Email = model.Email,
 				SecurityStamp = Guid.NewGuid().ToString(),
 				UserName = model.Email
 			};
-			var result = await _userManager.CreateAsync(user, model.Password);
-			if (!result.Succeeded)
-				return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+
+			try
+			{
+				await _userService.Create(model.Email, model.Password);
+				_logger.LogInformation("There is added a new user with password.");
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 
 			if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
 				await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
 			if (!await _roleManager.RoleExistsAsync(UserRoles.User))
 				await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
-			if (await _roleManager.RoleExistsAsync(UserRoles.User))
+			var userIsAdmin = User.IsInRole("Admin");
+
+			if (await _roleManager.RoleExistsAsync(UserRoles.User) && !userIsAdmin)
 			{
 				await _userManager.AddToRoleAsync(user, UserRoles.User);
 			}
-
-			return Ok(new Response { Status = "Success", Message = "User created successfully!" });
-		}
-
-		[AllowAnonymous]
-		[HttpPost]
-		[Route("register")]
-		public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
-		{
-			var userExists = await _userManager.FindByNameAsync(model.Email);
-			if (userExists != null)
-				return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
-			ApplicationUser user = new ApplicationUser()
-			{
-				Email = model.Email,
-				SecurityStamp = Guid.NewGuid().ToString(),
-				UserName = model.Email
-			};
-			var result = await _userManager.CreateAsync(user, model.Password);
-			if (!result.Succeeded)
-				return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-			if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
-				await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-			if (!await _roleManager.RoleExistsAsync(UserRoles.User))
-				await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
-
-			if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+			else if (await _roleManager.RoleExistsAsync(UserRoles.Admin) && userIsAdmin)
 			{
 				await _userManager.AddToRoleAsync(user, UserRoles.Admin);
 			}
 
-			return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+			return Ok("User created successfully!");
 		}
+
 
 
 		[HttpPost]
 		[Route("login")]
 		public async Task<IActionResult> Login([FromBody] RegisterModel model)
 		{
-			var user = await _userManager.FindByNameAsync(model.Email);
-			if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+
+			var user = await _userService.Authenticate(model.Email, model.Password);
+
+			if (user == null)
+				return new BadRequestObjectResult("Email or password is incorrect");
+
+			var key = Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]);
+
+
+			List<Claim> claims = new List<Claim>()
 			{
-				var userRoles = await _userManager.GetRolesAsync(user);
+				new Claim(ClaimTypes.Email, user.Email)
+			};
 
-				var authClaims = new List<Claim>
-				{
-					new Claim(ClaimTypes.Name, user.UserName),
-					new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				};
-
-				foreach (var userRole in userRoles)
-				{
-					authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-				}
-
-				var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-				var token = new JwtSecurityToken(
-					issuer: _configuration["JWT:ValidIssuer"],
-					audience: _configuration["JWT:ValidAudience"],
-					expires: DateTime.Now.AddHours(3),
-					claims: authClaims,
-					signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-					);
-
-				return Ok(new
-				{
-					token = new JwtSecurityTokenHandler().WriteToken(token),
-					expiration = token.ValidTo
-				});
+			var userRoles = await _userManager.GetRolesAsync(user);
+			foreach (var userRole in userRoles)
+			{
+				claims.Add(new Claim(ClaimTypes.Role, userRole));
 			}
-			return Unauthorized();
-		}
 
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var tokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(claims),
+				Expires = DateTime.UtcNow.AddDays(7),
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+			};
+			var token = tokenHandler.CreateToken(tokenDescriptor);
+			var tokenString = tokenHandler.WriteToken(token);
+
+			// return basic user info and authentication token
+			return Ok(new
+			{
+				Id = user.Id,
+				Email = user.Email,
+				Token = tokenString,
+				Expiration = token.ValidTo
+			});
+		}
 	}
 }
