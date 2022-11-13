@@ -7,7 +7,7 @@ namespace TamboliyaApi.Services
 	{
 		Task<ApplicationUser?> Authenticate(string email, string password);
 		IEnumerable<ApplicationUser> GetAll();
-		ApplicationUser? GetById(int id);
+		ApplicationUser? GetById(string? id);
 		Task<IdentityResult> Create(string email, string password);
 	}
 }

@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TamboliyaApi.Data;
 using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
+using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
@@ -40,7 +39,7 @@ namespace TamboliyaApi.Controllers
 
 		[HttpPost]
 		[Route("register")]
-		public async Task<IActionResult> RegisterUser([FromBody] RegisterModel model, string userRoles)
+		public async Task<IActionResult> RegisterUser([FromBody] RegisterModel model)
 		{
 			ApplicationUser user = new ApplicationUser()
 			{
@@ -116,13 +115,14 @@ namespace TamboliyaApi.Controllers
 			var tokenString = tokenHandler.WriteToken(token);
 
 			// return basic user info and authentication token
-			return Ok(new
+			var userData = new User()
 			{
-				Id = user.Id,
+				Id = Guid.TryParse(user.Id, out Guid userGuid) ? userGuid : Guid.Empty,
 				Email = user.Email,
 				Token = tokenString,
 				Expiration = token.ValidTo
-			});
+			};
+			return Ok(userData);
 		}
 	}
 }

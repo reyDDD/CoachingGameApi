@@ -42,8 +42,10 @@ namespace TamboliyaApi.Data
             modelBuilder.Entity<SideOfDodecahedron>().HasData(new SideOfDodecahedron { Id = 10, Number = 10, Color = Color.Green });
             modelBuilder.Entity<SideOfDodecahedron>().HasData(new SideOfDodecahedron { Id = 11, Number = 11, Color = Color.Yellow });
             modelBuilder.Entity<SideOfDodecahedron>().HasData(new SideOfDodecahedron { Id = 12, Number = 12, Color = Color.Blue });
-            #endregion
+			#endregion
 
-        }
+			base.OnModelCreating(modelBuilder);
+
+		}
     }
 }

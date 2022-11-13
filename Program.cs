@@ -10,6 +10,7 @@ using TamboliyaApi.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +53,7 @@ builder.Services.AddAuthentication(options =>
 		OnTokenValidated = context =>
 		{
 			var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-			var userId = int.Parse(context.Principal.Identity.Name);
+			var userId = ClaimsPrincipal.Current?.FindFirst(ClaimTypes.Email)?.Value;
 			var user = userService.GetById(userId);
 			if (user == null)
 			{

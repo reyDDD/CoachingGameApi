@@ -41,9 +41,14 @@ namespace TamboliyaApi.Services
 			return _context.Users;
 		}
 
-		public ApplicationUser? GetById(int id)
+		public ApplicationUser? GetById(string? id)
 		{
-			return _context.Users.Find(id);
+			if (id == null)
+				return null;
+			else
+			{
+				return _context.Users.Find(id);
+			}
 		}
 
 		public async Task<IdentityResult> Create(string email, string password)
