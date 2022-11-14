@@ -17,7 +17,7 @@ namespace TamboliyaApi.Hubs
 		public async Task JoinRoom(int roomId)
 		{
 			await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
-			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, Context?.User?.Identity?.Name + " joined.");
+			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, Context?.User?.Identity?.Name + " joined."); //TODO: добавить мейл пользователя
 		}
 
 		public async Task LeaveRoom(int roomId)

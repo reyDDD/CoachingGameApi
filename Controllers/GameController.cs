@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Data;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
-using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
 using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class GameController : ControllerBase
@@ -251,8 +252,17 @@ namespace TamboliyaApi.Controllers
 			await newGame.EndOfTheGame(game);
 
 			game.IsFinished = true;
-			unitOfWork.GameRepository.Update(game);
-			await unitOfWork.SaveAsync();
+			try
+			{
+				unitOfWork.GameRepository.Update(game);
+				await unitOfWork.SaveAsync();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				return BadRequest("The game isn't update. There is error during update games data");
+			}
+			
 			return Ok("Гру закінчено");
 		}
 
