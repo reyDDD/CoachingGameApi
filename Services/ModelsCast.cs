@@ -253,7 +253,7 @@ namespace TamboliyaApi.Services
 		}
 
 
-		public static LogsDTOModel GameLogsToLogsDTOModel(this IEnumerable<GameChatLog> gameLogs, int gameId, Guid? userId)
+		public static LogsDTOModel GameLogsToLogsDTOModel(this IEnumerable<GameChatLog> gameLogs, int gameId, int userId)
 		{
 			var model = new LogsDTOModel
 			{

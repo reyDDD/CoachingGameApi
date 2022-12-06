@@ -1,26 +1,64 @@
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.Services;
 using TamboliyaApi.Hubs;
+using TamboliyaApi.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Identity;
-using TamboliyaApi.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Security.Claims;
+
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 	 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+	{
+		options.SignIn.RequireConfirmedAccount = false;
+		options.Password.RequiredLength = 7;
+		options.Password.RequireDigit = false;
+		options.Password.RequireUppercase = false;
+	})
+	.AddEntityFrameworkStores<AppDbContext>()
+	.AddDefaultTokenProviders();
+
+
+
+
+builder.Services.AddIdentityServer(options =>
+{
+	options.Events.RaiseErrorEvents = true;
+	options.Events.RaiseInformationEvents = true;
+	options.Events.RaiseFailureEvents = true;
+	options.Events.RaiseSuccessEvents = true;
+})
+	.AddDeveloperSigningCredential()
+	.AddInMemoryIdentityResources(Config.Ids)
+	.AddInMemoryApiResources(Config.Apis)
+	.AddInMemoryClients(Config.Clients)
+	.AddAspNetIdentity<AppUser>();
+
+
+
+
+builder.Services.AddAuthentication()
+	.AddJwtBearer(options =>
+	{
+		options.Authority = "https://localhost:7212";
+		options.Audience = "tamboliyaApi";
+		//options.TokenValidationParameters = new TokenValidationParameters()
+		//{
+		//    RoleClaimType = "role"
+		//};
+	});
+
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
 builder.Services.AddSwaggerGen(swagger =>
 {
 	swagger.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
@@ -29,53 +67,7 @@ builder.Services.AddSwaggerGen(swagger =>
 	swagger.EnableAnnotations();
 });
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-	{
-		options.SignIn.RequireConfirmedAccount = false;
-	})
-				.AddEntityFrameworkStores<AppDbContext>()
-				.AddDefaultTokenProviders();
-
-
-// Adding Authentication  
-var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]);
-
-builder.Services.AddAuthentication(options =>
-{
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-	
-	options.Events = new JwtBearerEvents
-	{
-		OnTokenValidated = context =>
-		{
-			var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-			var userId = ClaimsPrincipal.Current?.FindFirst(ClaimTypes.Email)?.Value;
-			var user = userService.GetById(userId);
-			if (user == null)
-			{
-				// return unauthorized if user no longer exists
-				context.Fail("Unauthorized");
-			}
-			return Task.CompletedTask;
-		}
-	};
-	options.RequireHttpsMetadata = false;
-	options.SaveToken = true;
-	options.TokenValidationParameters = new TokenValidationParameters
-	{
-		ValidateIssuerSigningKey = true,
-		IssuerSigningKey = new SymmetricSecurityKey(key),
-		ValidateIssuer = false,
-		ValidateAudience = false
-	};
-});
-
-
-
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSignalR();
 builder.Services.AddResponseCompression(opts =>
 {
@@ -93,7 +85,6 @@ builder.Services.AddScoped<NewMoveService>();
 builder.Services.AddScoped<NewGame>();
 builder.Services.AddScoped<LogService>();
 builder.Services.AddSingleton<PositionsOnMapService>();
-builder.Services.AddScoped<IUserService, UserService>();
 
 
 var app = builder.Build();
@@ -117,11 +108,18 @@ app.UseCors(policy =>
 
 
 app.UseHttpsRedirection();
+app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseIdentityServer();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapRazorPages();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
+app.MapDefaultControllerRoute();
 app.Run();

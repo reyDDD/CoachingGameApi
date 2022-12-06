@@ -42,7 +42,7 @@ namespace TamboliyaApi.Controllers
 		[Produces("application/json")]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> StartNewGame(string question)
+		public async Task<IActionResult> StartNewGame([FromQuery] string question)
 		{
 			var game = (await newGame.GetOracle(question)).NewGameToGame();
 			unitOfWork.GameRepository.Insert(game);

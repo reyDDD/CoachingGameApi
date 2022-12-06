@@ -32,7 +32,7 @@ namespace TamboliyaApi.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<LogsDTOModel>> Info(int gameId, Guid? userId)
+		public async Task<ActionResult<LogsDTOModel>> Info(int gameId, int userId)
 		{
 			if (gameId == default(int))
 				return BadRequest("Input model isn't correct");
