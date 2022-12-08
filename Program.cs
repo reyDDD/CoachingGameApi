@@ -7,12 +7,28 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 	 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// configures IIS out-of-proc settings (see https://github.com/aspnet/AspNetCore/issues/14882)
+builder.Services.Configure<IISOptions>(iis =>
+{
+	iis.AuthenticationDisplayName = "Windows";
+	iis.AutomaticAuthentication = false;
+});
+
+// configures IIS in-proc settings
+builder.Services.Configure<IISServerOptions>(iis =>
+{
+	iis.AuthenticationDisplayName = "Windows";
+	iis.AutomaticAuthentication = false;
+});
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -38,21 +54,22 @@ builder.Services.AddIdentityServer(options =>
 	.AddDeveloperSigningCredential()
 	.AddInMemoryIdentityResources(Config.Ids)
 	.AddInMemoryApiResources(Config.Apis)
+	.AddInMemoryApiScopes(Config.GetApiScopes())
 	.AddInMemoryClients(Config.Clients)
 	.AddAspNetIdentity<AppUser>();
 
 
 
 
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
 	{
 		options.Authority = "https://localhost:7212";
-		options.Audience = "tamboliyaApi";
-		//options.TokenValidationParameters = new TokenValidationParameters()
-		//{
-		//    RoleClaimType = "role"
-		//};
+		options.Audience = "tamboliya-Api";
+		options.TokenValidationParameters = new TokenValidationParameters()
+		{
+			RoleClaimType = "role"
+		};
 	});
 
 
@@ -102,9 +119,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors(policy =>
 	policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7147", "https://localhost:7112")
 	.AllowAnyMethod()
-	//.WithHeaders(HeaderNames.ContentType))
 	.AllowAnyHeader()
-	.AllowCredentials());
+	//.AllowCredentials()
+	);
 
 
 app.UseHttpsRedirection();
@@ -113,11 +130,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseIdentityServer();
+
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseIdentityServer();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
