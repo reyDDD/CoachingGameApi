@@ -10,6 +10,7 @@ using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
+	[SecurityHeaders]
 	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
