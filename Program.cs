@@ -68,8 +68,8 @@ builder.Services.AddIdentityServer(options =>
     .AddDeveloperSigningCredential();
 
 
-
-builder.Services.AddAuthentication(/*JwtBearerDefaults.AuthenticationScheme*/
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);//работает для блейзор авторизации
+builder.Services.AddAuthentication(/*работает для доступа к апи*/
     options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,8 +86,6 @@ builder.Services.AddAuthentication(/*JwtBearerDefaults.AuthenticationScheme*/
             RoleClaimType = "role"
         };
     });
-
-
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
