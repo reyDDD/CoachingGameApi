@@ -10,9 +10,8 @@ using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
-	[SecurityHeaders]
-	[Authorize]
-	[Route("api/[controller]")]
+    [Authorize]
+    [Route("api/[controller]")]
 	[ApiController]
 	public class GameController : ControllerBase
 	{

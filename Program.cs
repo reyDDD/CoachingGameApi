@@ -8,28 +8,14 @@ using System.Reflection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using IdentityServer4.Configuration;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
      options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// configures IIS out-of-proc settings (see https://github.com/aspnet/AspNetCore/issues/14882)
-builder.Services.Configure<IISOptions>(iis =>
-{
-    iis.AuthenticationDisplayName = "Windows";
-    iis.AutomaticAuthentication = false;
-});
-
-// configures IIS in-proc settings
-builder.Services.Configure<IISServerOptions>(iis =>
-{
-    iis.AuthenticationDisplayName = "Windows";
-    iis.AutomaticAuthentication = false;
-});
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -39,51 +25,28 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
         options.Password.RequireDigit = false;
         options.Password.RequireUppercase = false;
     })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<AppDbContext>();
 
 
+ 
 
-
-builder.Services.AddIdentityServer(options =>
+builder.Services.AddAuthentication(auth =>
 {
-    options.Events.RaiseErrorEvents = true;
-    options.Events.RaiseInformationEvents = true;
-    options.Events.RaiseFailureEvents = true;
-    options.Events.RaiseSuccessEvents = true;
-
-    options.UserInteraction = new UserInteractionOptions()
-    {
-        LogoutUrl = "/Account/Logout",
-        LoginUrl = "/Account/Login",
-        LoginReturnUrlParameter = "returnUrl",
-
-    };
+    auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-    .AddInMemoryClients(Config.Clients)
-    .AddInMemoryIdentityResources(Config.Ids)
-    .AddInMemoryApiResources(Config.Apis)
-    .AddInMemoryApiScopes(Config.GetApiScopes())
-    .AddAspNetIdentity<AppUser>()
-    .AddDeveloperSigningCredential();
-
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);//работает для блейзор авторизации
-builder.Services.AddAuthentication(/*работает для доступа к апи*/
-    options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    }
-    )
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://localhost:7212";
-        options.Audience = "myApi";
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = new TokenValidationParameters()
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            RoleClaimType = "role"
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder!.Configuration["JwtIssuer"],
+            ValidAudience = builder!.Configuration["JwtAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder!.Configuration["JwtSecurityKey"]!))
         };
     });
 
@@ -143,8 +106,6 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseIdentityServer();
 
 app.UseAuthentication();
 app.UseAuthorization();

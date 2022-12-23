@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.Services;
@@ -8,7 +10,8 @@ using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
-	[Route("api/[controller]")]
+    [Authorize(Roles = "User")]
+    [Route("api/[controller]")]
 	[ApiController]
 	public class GameLogController : ControllerBase
 	{
