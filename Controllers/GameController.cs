@@ -77,8 +77,10 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GameDTO>> GetInfoAboutGame(int gameId)
         {
+            var userGuid = await GetUserId();
+
             var actualGame = (await unitOfWork.GameRepository
-                .GetAsync(game => game.Id == gameId, includeProperties: "ActualPosition,InitialGameData")).FirstOrDefault();
+                .GetAsync(game => game.Id == gameId && game.UserId == userGuid, includeProperties: "ActualPosition,InitialGameData")).FirstOrDefault();
 
             if (actualGame == null) return new BadRequestObjectResult($"Game with id {gameId} not found");
 

@@ -81,5 +81,34 @@ namespace TamboliyaApi.Controllers
 
 			return CreatedAtAction(nameof(Info), new { gameId = logsOfGame.GameId, userId = logsOfGame.UserId}, logsOfGame);
 		}
-	}
+
+
+        /// <summary>
+        /// Add new message to game's log
+        /// </summary>
+        /// <param name="logLine">New model's message for log</param>
+        /// <returns>Status code 201 if line are added</returns>
+        [HttpPost]
+        [Route("addMessageToLog")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> AddMessageToLog([FromBody] LogLineDTOModel logLine)
+        {
+            //TODO: проверить, что входящий параметр ид пользователя и игры действительный, иначе добавлять сообщение в моделстейт
+            if (!ModelState.IsValid)
+                return BadRequest("Input model isn't correct");
+
+                unitOfWork.GameChatLog.Insert(new GameChatLog
+                {
+                    Game = (await unitOfWork.GameRepository.GetByIDAsync(game => game!.Id == logLine!.GameId))!,
+                    UserId = logLine.UserId,
+                    Message = logLine.Message
+                });
+
+            await unitOfWork.SaveAsync();
+            //TODO: Доработать возвращаемое значение - сделать ГЕТ контроллер с правильными входными данными
+            return CreatedAtAction(nameof(Info), new { gameId = logLine.GameId, userId = logLine.UserId }, logLine);
+        }
+    }
 }
