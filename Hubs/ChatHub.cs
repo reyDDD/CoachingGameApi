@@ -8,7 +8,7 @@ namespace TamboliyaApi.Hubs
 
 		public async Task SendMessageToGroup(int roomId, string message, string userMail)
 		{
-			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, $"User {userMail} send message '{message}'" );
+			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, $"{userMail} send '{message}'" );
 		}
 
 
