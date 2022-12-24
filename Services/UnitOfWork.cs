@@ -11,10 +11,10 @@ namespace TamboliyaApi.Services
         private GenericRepository<ActualPositionOnTheMap> actualPositionOnTheMapRepository = null!;
         private GenericRepository<GameLog> gameLog = null!;
 		private GenericRepository<GameChatLog> gameChatLog = null!;
+        private GenericRepository<AppUser> gameUsers = null!;
 
 
-
-		public UnitOfWork(AppDbContext context)
+        public UnitOfWork(AppDbContext context)
         {
             this.context = context;
         }
@@ -84,7 +84,20 @@ namespace TamboliyaApi.Services
 			}
 		}
 
-		public async Task SaveAsync()
+        public GenericRepository<AppUser> GameUsers
+        {
+            get
+            {
+
+                if (this.gameUsers == null)
+                {
+                    this.gameUsers = new GenericRepository<AppUser>(context);
+                }
+                return gameUsers;
+            }
+        }
+
+        public async Task SaveAsync()
         {
            await context.SaveChangesAsync();
         }

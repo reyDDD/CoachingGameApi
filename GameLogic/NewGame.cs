@@ -11,8 +11,9 @@ namespace TamboliyaApi.GameLogic
 		public bool IsFinished { get; set; } = false;
 		public Oracle Oracle { get; init; }
 		public ActualPositionOnMap ActualPosition { get; set; } = null!;
+		public Guid CreatorId { get; set; } 
 
-		public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
+        public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
 		public ProphecyCollectionService prophecyService;
 
 
@@ -35,7 +36,7 @@ namespace TamboliyaApi.GameLogic
 
 
 
-		public async Task<NewGame> GetOracle(string userQuestion)
+		public async Task<NewGame> GetOracle(string userQuestion, Guid userId)
 		{
 			await Oracle.Start(userQuestion);
 			ActualPosition = new()
@@ -44,8 +45,9 @@ namespace TamboliyaApi.GameLogic
 				PositionNumber = Oracle.StepOnPath,
 				RegionOnMap = Oracle.RegionOnMap
 			};
+			this.CreatorId = userId;
 
-			return this;
+            return this;
 		}
 
 		public async Task GoToNewStage(Game game)

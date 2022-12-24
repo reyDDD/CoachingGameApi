@@ -208,7 +208,8 @@ namespace TamboliyaApi.Services
 					PositionNumber = newGame.ActualPosition.PositionNumber,
 					RegionOnMap = newGame.ActualPosition.RegionOnMap
 				},
-				Created = DateTime.UtcNow
+				Created = DateTime.UtcNow,
+				UserId = newGame.CreatorId
 			};
 			return game;
 		}
