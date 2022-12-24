@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,12 +54,32 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+
+var jwtSecurityScheme = new OpenApiSecurityScheme
+{
+    BearerFormat = "JWT",
+    Name = "Authorization",
+    In = ParameterLocation.Header,
+    Type = SecuritySchemeType.Http,
+    Scheme = JwtBearerDefaults.AuthenticationScheme,
+    Description = "Please enter into field the word 'Bearer' following by space and JWT",
+    Reference = new OpenApiReference
+    {
+        Id = JwtBearerDefaults.AuthenticationScheme,
+        Type = ReferenceType.SecurityScheme
+    }
+};
 builder.Services.AddSwaggerGen(swagger =>
 {
     swagger.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
     swagger.SchemaFilter<EnumSchemaFilter>();
     swagger.EnableAnnotations();
+    swagger.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+    swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
 });
 
 builder.Services.AddAutoMapper(typeof(Program));
