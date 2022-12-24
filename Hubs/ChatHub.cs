@@ -4,26 +4,24 @@ namespace TamboliyaApi.Hubs
 {
 	public class ChatHub : Hub
 	{
-		public async Task SendMessage(string user, string message)
+
+
+		public async Task SendMessageToGroup(int roomId, string message, string userMail)
 		{
-			await Clients.All.SendAsync("ReceiveMessage", user, message);
+			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, $"User {userMail} send message '{message}'" );
 		}
 
-		public async Task SendMessageToGroup(int roomId, string message)
-		{
-			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, message);
-		}
 
-		public async Task JoinRoom(int roomId)
+        public async Task JoinRoom(int roomId, string userMail)
 		{
 			await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
-			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, Context?.User?.Identity?.Name + " joined."); //TODO: добавить мейл пользователя
+			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, $"User with mail {userMail} was joined");
 		}
 
-		public async Task LeaveRoom(int roomId)
+		public async Task LeaveRoom(int roomId, string userMail)
 		{
 			await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId.ToString());
-			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, Context?.User?.Identity?.Name + " removed.");
+			await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", roomId, $"User with mail {userMail} was removed");
 		}
 	}
 }
