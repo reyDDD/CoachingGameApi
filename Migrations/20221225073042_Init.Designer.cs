@@ -12,15 +12,15 @@ using TamboliyaApi.Data;
 namespace TamboliyaApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221205173045_init")]
-    partial class init
+    [Migration("20221225073042_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0")
+                .HasAnnotation("ProductVersion", "7.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -50,6 +50,22 @@ namespace TamboliyaApi.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "02488324-8898-4cad-a015-f88abca3c370",
+                            ConcurrencyStamp = "054ef2b8-d5c5-4652-b4cb-573e200ca9e5",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "3f6e423b-37bb-4330-af90-f8cc9e5a7bd4",
+                            ConcurrencyStamp = "0a643a06-51c4-4a98-a8f4-ab3f3a529276",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -289,8 +305,8 @@ namespace TamboliyaApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

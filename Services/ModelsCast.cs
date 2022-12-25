@@ -254,12 +254,12 @@ namespace TamboliyaApi.Services
 		}
 
 
-		public static LogsDTOModel GameLogsToLogsDTOModel(this IEnumerable<GameChatLog> gameLogs, int gameId, int userId)
+		public static LogsDTOModel GameLogsToLogsDTOModel(this IEnumerable<GameChatLog> gameLogs, GameUserDTO gameUser)
 		{
 			var model = new LogsDTOModel
 			{
-				GameId = gameId,
-				UserId = userId,
+				GameId = gameUser.GameId,
+				UserId = gameUser.UserId,
 				Messages = new HashSet<string>()
 			};
 
@@ -269,5 +269,17 @@ namespace TamboliyaApi.Services
 			} 
 			return model;
 		}
-	}
+
+		public static GameChatLogDTO GameChatLogToGameChatLogDTO(this GameChatLog log)
+		{
+            var model = new GameChatLogDTO
+            {
+                Id = log.Id,
+                GameId = log.GameId,
+                UserId = log.UserId,
+                Message = log.Message
+            };
+            return model;
+        }
+    }
 }

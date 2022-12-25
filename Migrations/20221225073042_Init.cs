@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TamboliyaApi.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -215,7 +215,7 @@ namespace TamboliyaApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GameId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -276,6 +276,15 @@ namespace TamboliyaApi.Migrations
                         principalTable: "Games",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "02488324-8898-4cad-a015-f88abca3c370", "054ef2b8-d5c5-4652-b4cb-573e200ca9e5", "User", "USER" },
+                    { "3f6e423b-37bb-4330-af90-f8cc9e5a7bd4", "0a643a06-51c4-4a98-a8f4-ab3f3a529276", "Admin", "ADMIN" }
                 });
 
             migrationBuilder.InsertData(

@@ -1,9 +1,13 @@
-﻿namespace TamboliyaApi.Data
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TamboliyaApi.Data
 {
     public class GameChatLog
     {
+		[Key]
 		public int Id { get; set; }
-		public int UserId { get; set; }
+		[Required]
+		public Guid UserId { get; set; }
 		public string Message { get; set; } = null!;
 
 		public int GameId { get; set; }

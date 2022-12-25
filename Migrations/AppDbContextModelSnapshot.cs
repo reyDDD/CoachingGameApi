@@ -17,7 +17,7 @@ namespace TamboliyaApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0")
+                .HasAnnotation("ProductVersion", "7.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -51,15 +51,15 @@ namespace TamboliyaApi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9861a0cb-1798-46fb-8523-4dfeaadd343d",
-                            ConcurrencyStamp = "3e6811bf-56a7-49f9-920b-991959bc406d",
+                            Id = "02488324-8898-4cad-a015-f88abca3c370",
+                            ConcurrencyStamp = "054ef2b8-d5c5-4652-b4cb-573e200ca9e5",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "b98f3f04-9709-459e-bb19-b223bf6d8fcf",
-                            ConcurrencyStamp = "1b9aad25-c5c9-4afd-853b-e36e7c4325f7",
+                            Id = "3f6e423b-37bb-4330-af90-f8cc9e5a7bd4",
+                            ConcurrencyStamp = "0a643a06-51c4-4a98-a8f4-ab3f3a529276",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -302,8 +302,8 @@ namespace TamboliyaApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
