@@ -1,6 +1,4 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Data;
@@ -12,7 +10,7 @@ using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="User")]
     [Route("api/[controller]")]
     [ApiController]
     public class GameController : ControllerBase
@@ -287,7 +285,8 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GameLogDTO>> GameLog(int gameId)
         {
-            var log = await unitOfWork.GameLog.GetAsync(logs => logs.GameId == gameId,
+            var userGuid = await GetUserId();
+            var log = await unitOfWork.GameLog.GetAsync(logs => logs.GameId == gameId && logs.UserId == userGuid,
                 orderBy: q => q.OrderByDescending(d => d.Id));
             var logCollection = log.Select(x => x.Message).ToList();
 
@@ -298,6 +297,30 @@ namespace TamboliyaApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Get status of game
+        /// </summary>
+        /// <param name="gameId">Game ID</param>
+        /// <returns>Status of game</returns>
+        [HttpGet]
+        [Route("status/{gameId}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<bool>> GetGameStatus(int gameId)
+        {
+            if (gameId == default) 
+                return BadRequest("Game Id is not valid");
+
+            var userGuid = await GetUserId();
+            var games = await unitOfWork.GameRepository.GetAsync(game => game.Id == gameId && game.UserId == userGuid);
+            var game = games.FirstOrDefault();
+            if (game == null) return BadRequest("Game created by this user not found");
+            else
+            {
+                return Ok(game!.IsFinished);
+            }
+        }
 
         private async Task<Guid> GetUserId()
         {
