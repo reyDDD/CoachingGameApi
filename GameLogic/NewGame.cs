@@ -1,6 +1,7 @@
 ﻿using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
+using TamboliyaLibrary.DAL;
 using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.GameLogic
@@ -11,7 +12,15 @@ namespace TamboliyaApi.GameLogic
 		public bool IsFinished { get; set; } = false;
 		public Oracle Oracle { get; init; }
 		public ActualPositionOnMap ActualPosition { get; set; } = null!;
-		public Guid CreatorId { get; set; } 
+		public Guid CreatorId { get; set; }
+
+        //TODO: new field (delete comment after functionality will be create
+        public DateTime DateBeginning { get; set; }
+        public DateTime DateEnd { get; set; }
+        public int? ParentGameId { get; set; }
+        public int MaxUsersCount { get; set; } = default(int);
+        public GameType GameType { get; set; }
+
 
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
 		public ProphecyCollectionService prophecyService;
@@ -36,9 +45,9 @@ namespace TamboliyaApi.GameLogic
 
 
 
-		public async Task<NewGame> GetOracle(string userQuestion, Guid userId)
+		public async Task<NewGame> GetOracle(NewParentGame newParentGame, Guid userId)
 		{
-			await Oracle.Start(userQuestion);
+			await Oracle.Start(newParentGame.Question);
 			ActualPosition = new()
 			{
 				Description = Oracle.ExitPath,
@@ -46,6 +55,10 @@ namespace TamboliyaApi.GameLogic
 				RegionOnMap = Oracle.RegionOnMap
 			};
 			this.CreatorId = userId;
+			this.DateBeginning = newParentGame.DateBeginning;
+			this.ParentGameId = newParentGame.ParentGame;
+			this.MaxUsersCount = newParentGame.MaxUsersCount;
+			this.GameType = newParentGame.GameType;
 
             return this;
 		}

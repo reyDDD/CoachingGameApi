@@ -17,6 +17,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="GameLogic\DAL\**" />
+    <Content Remove="GameLogic\DAL\**" />
+    <EmbeddedResource Remove="GameLogic\DAL\**" />
+    <None Remove="GameLogic\DAL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot\lib\bootstrap\css\bootstrap.css.map" />
     <Content Remove="wwwroot\lib\bootstrap\fonts\glyphicons-halflings-regular.svg" />
     <Content Remove="wwwroot\lib\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
@@ -52,7 +59,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="GameLogic\DAL\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 

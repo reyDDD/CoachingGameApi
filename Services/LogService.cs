@@ -17,7 +17,7 @@ namespace TamboliyaApi.Services
             var logQuestion = new GameLog
             {
                 Message = "Запит гравця - " + game.InitialGameData.Question,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logQuestion);
@@ -25,7 +25,7 @@ namespace TamboliyaApi.Services
             var logMotive = new GameLog
             {
                 Message = "Мотив - " + game.InitialGameData.Motive,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logMotive);
@@ -33,7 +33,7 @@ namespace TamboliyaApi.Services
             var logQualityOfExperience = new GameLog
             {
                 Message = "Якість досвіду - " + game.InitialGameData.QualityOfExperience,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logQualityOfExperience);
@@ -41,7 +41,7 @@ namespace TamboliyaApi.Services
             var logEnvironmentAndCircumstances = new GameLog
             {
                 Message = "Оточення і обставини - " + game.InitialGameData.EnvironmentAndCircumstances,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logEnvironmentAndCircumstances);
@@ -49,7 +49,7 @@ namespace TamboliyaApi.Services
             var logChainLinks = new GameLog
             {
                 Message = "Ланки ланцюга - " + game.InitialGameData.ChainLinks,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logChainLinks);
@@ -57,7 +57,7 @@ namespace TamboliyaApi.Services
             var logExitPath = new GameLog
             {
                 Message = "Шлях входу - " + game.InitialGameData.ExitPath,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logExitPath);
@@ -68,7 +68,7 @@ namespace TamboliyaApi.Services
 			var logStepOnPath = new GameLog
             {
                 Message = "Позиція на шляху - " + positionDescription,
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logStepOnPath);
@@ -80,7 +80,7 @@ namespace TamboliyaApi.Services
             var logMessage = new GameLog
             {
                 Message = $"Позиція на шляху {game.ActualPosition.RegionOnMap} -  {game.ActualPosition.Description}",
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logMessage);
@@ -91,7 +91,7 @@ namespace TamboliyaApi.Services
             var logMessage = new GameLog
             {
                 Message = $"Подія на шляху {game.ActualPosition.RegionOnMap} -  {message}",
-                UserId = game.UserId,
+                UserId = game.CreatorGuid,
                 Game = game
             };
             unitOfWork.GameLog.Insert(logMessage);

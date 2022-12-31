@@ -35,18 +35,18 @@ namespace TamboliyaApi.Controllers
         /// <summary>
         /// Start new game
         /// </summary>
-        /// <param name="question">User question</param>
+        /// <param name="newParentGame">Model for creating new parent game</param>
         /// <returns>The result of the oracle</returns>
-        [HttpGet]
+        [HttpPost]
         [Route("new")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StartNewGame([FromQuery] string question)
+        public async Task<IActionResult> StartNewGame([FromBody] NewParentGame newParentGame)
         {
             var userGuid = await GetUserId();
 
-            var game = (await newGame.GetOracle(question, userGuid)).NewGameToGame();
+            var game = (await newGame.GetOracle(newParentGame, userGuid)).NewGameToGame();
             unitOfWork.GameRepository.Insert(game);
             await logService.AddOracle(game, newGame);
             await unitOfWork.SaveAsync();
@@ -78,7 +78,7 @@ namespace TamboliyaApi.Controllers
             var userGuid = await GetUserId();
 
             var actualGame = (await unitOfWork.GameRepository
-                .GetAsync(game => game.Id == gameId && game.UserId == userGuid, includeProperties: "ActualPosition,InitialGameData")).FirstOrDefault();
+                .GetAsync(game => game.Id == gameId && game.CreatorGuid == userGuid, includeProperties: "ActualPosition,InitialGameData")).FirstOrDefault();
 
             if (actualGame == null) return new BadRequestObjectResult($"Game with id {gameId} not found");
 
@@ -100,7 +100,7 @@ namespace TamboliyaApi.Controllers
             var userGuid = await GetUserId();
 
             var userGames = (await unitOfWork.GameRepository
-                .GetAsync(u => u.UserId == userGuid, includeProperties: "ActualPosition,InitialGameData"));
+                .GetAsync(u => u.CreatorGuid == userGuid, includeProperties: "ActualPosition,InitialGameData"));
 
             if (userGames.Count() == 0) return new BadRequestObjectResult("User games not found");
 
@@ -313,7 +313,7 @@ namespace TamboliyaApi.Controllers
                 return BadRequest("Game Id is not valid");
 
             var userGuid = await GetUserId();
-            var games = await unitOfWork.GameRepository.GetAsync(game => game.Id == gameId && game.UserId == userGuid);
+            var games = await unitOfWork.GameRepository.GetAsync(game => game.Id == gameId && game.CreatorGuid == userGuid);
             var game = games.FirstOrDefault();
             if (game == null) return BadRequest("Game created by this user not found");
             else

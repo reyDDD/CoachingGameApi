@@ -130,7 +130,7 @@ namespace TamboliyaApi.Controllers
 
             var newLogLine = new GameChatLog
             {
-                Game = (await unitOfWork.GameRepository.GetByIDAsync(game => game.Id == logLine.GameId && game!.UserId == userId))!,
+                Game = (await unitOfWork.GameRepository.GetByIDAsync(game => game.Id == logLine.GameId && game!.CreatorGuid == userId))!,
                 UserId = userId,
                 Message = logLine.Message
             };
