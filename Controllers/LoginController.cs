@@ -30,7 +30,8 @@ namespace TamboliyaApi.Controllers
         {
             var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, false);
 
-            if (!result.Succeeded) return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
+            if (!result.Succeeded) 
+                return BadRequest(new LoginResult { Successful = false, Error = "Username or/and password are invalid." });
 
             var user = await _signInManager.UserManager.FindByEmailAsync(login.Email);
             var roles = await _signInManager.UserManager.GetRolesAsync(user!);

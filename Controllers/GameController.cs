@@ -35,20 +35,20 @@ namespace TamboliyaApi.Controllers
         /// <summary>
         /// Start new game
         /// </summary>
-        /// <param name="newParentGame">Model for creating new parent game</param>
+        /// <param name="newGame">Model for creating new parent game</param>
         /// <returns>The result of the oracle</returns>
         [HttpPost]
         [Route("new")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StartNewGame([FromBody] NewParentGame newParentGame)
+        public async Task<IActionResult> StartNewGame([FromBody] NewUserGame newGame)
         {
             var userGuid = await GetUserId();
 
-            var game = (await newGame.GetOracle(newParentGame, userGuid)).NewGameToGame();
+            var game = (await this.newGame.GetOracle(newGame, userGuid)).NewGameToGame();
             unitOfWork.GameRepository.Insert(game);
-            await logService.AddOracle(game, newGame);
+            await logService.AddOracle(game, this.newGame);
             await unitOfWork.SaveAsync();
 
             OracleDTO? DTO = default;
@@ -101,6 +101,32 @@ namespace TamboliyaApi.Controllers
 
             var userGames = (await unitOfWork.GameRepository
                 .GetAsync(u => u.CreatorGuid == userGuid, includeProperties: "ActualPosition,InitialGameData"));
+
+            if (userGames.Count() == 0) return new BadRequestObjectResult("User games not found");
+
+            var gameDTO = userGames!.Select(x => x.GameToGameDTO()!);
+            return Ok(gameDTO);
+        }
+
+
+        [SwaggerOperation(
+            Summary = "Get list latest games to join",
+            Description = "Return collection of latest games to join")]
+        [HttpGet]
+        [Route("lastGamesToJoin")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<GameDTO>>> GetLastGamesToJoin()
+        {
+            var userGuid = await GetUserId();
+            //TODO: зробити так, щоб в списку не показувались ігри, до яких користувач уже приєднався раніше (він в списку дочірніх гравців)
+            var userGames = (await unitOfWork.GameRepository
+                .GetAsync(
+                filter: u => u.CreatorGuid != userGuid && u.IsFinished != true && u.DateBeginning > DateTime.UtcNow,
+                includeProperties: "ActualPosition,InitialGameData",
+                orderBy: x => x.OrderBy(x => x.DateBeginning)))
+                .Take(20);
 
             if (userGames.Count() == 0) return new BadRequestObjectResult("User games not found");
 

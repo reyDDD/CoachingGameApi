@@ -45,7 +45,7 @@ namespace TamboliyaApi.GameLogic
 
 
 
-		public async Task<NewGame> GetOracle(NewParentGame newParentGame, Guid userId)
+		public async Task<NewGame> GetOracle(NewUserGame newParentGame, Guid userId)
 		{
 			await Oracle.Start(newParentGame.Question);
 			ActualPosition = new()

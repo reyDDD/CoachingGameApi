@@ -228,6 +228,8 @@ namespace TamboliyaApi.Services
                 GameId = newGame.Id,
                 Created = newGame.DateBeginning,
                 IsFinished = newGame.IsFinished,
+                GameType = newGame.GameType,
+                DateBeginning = newGame.DateBeginning,
                 ActualPosition = new()
                 {
                     Description = newGame.ActualPosition.Description,
