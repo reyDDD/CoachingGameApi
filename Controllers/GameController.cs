@@ -45,16 +45,17 @@ namespace TamboliyaApi.Controllers
         public async Task<IActionResult> StartNewGame([FromBody] NewUserGame newGame)
         {
             var userGuid = await GetUserId();
-
-            var game = (await this.newGame.GetOracle(newGame, userGuid)).NewGameToGame();
-            unitOfWork.GameRepository.Insert(game);
-            await logService.AddOracle(game, this.newGame);
+            //TODO: ввести обмеження, що до існуючої гри не може приєднатися більше гравців, ніж задав власник
+            var game = await this.newGame.GetOracle(newGame, userGuid);
+            var gameCasted = game.NewGameToGame();
+            unitOfWork.GameRepository.Insert(gameCasted);
+            await logService.AddOracle(gameCasted, this.newGame);
             await unitOfWork.SaveAsync();
 
             OracleDTO? DTO = default;
             try
             {
-                DTO = game.InitialGameData.InitialGameDataToOracleDTO();
+                DTO = gameCasted.InitialGameData.InitialGameDataToOracleDTO();
             }
             catch (Exception ex)
             {
@@ -275,15 +276,29 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<string>> FinishTheGame([FromBody] int gameId)
         {
+            var userGuid= await GetUserId();
+
             var game = await unitOfWork.GameRepository
-                .GetByIDAsync(game => game.Id == gameId,
-                includeProperties: "ActualPosition,InitialGameData");
+                .GetByIDAsync(game => game.Id == gameId && game.CreatorGuid == userGuid,
+                includeProperties: "ActualPosition,InitialGameData,ChildsGames");
             if (game == null) return BadRequest("Game not found");
             if (game.IsFinished) return BadRequest("The game has already been completed");
 
             await newGame.EndOfTheGame(game);
 
             game.IsFinished = true;
+            //TODO: привести час до єдиного стандарту - перетворювати на єдиний стандарт для користувачів з різними часовими поясами
+            game.DateEnding = DateTime.UtcNow;
+
+            foreach (var childsGame in game?.ChildsGames!)
+            {
+                if (!childsGame.IsFinished)
+                {
+                    childsGame!.IsFinished = true;
+                    childsGame!.DateEnding = DateTime.UtcNow;
+                }
+            }
+
             try
             {
                 unitOfWork.GameRepository.Update(game);

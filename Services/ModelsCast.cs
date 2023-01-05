@@ -210,6 +210,7 @@ namespace TamboliyaApi.Services
                 },
                 CreatorGuid = newGame.CreatorId,
                 DateBeginning = newGame.DateBeginning,
+                DateEnding = newGame.DateEnding,
                 ParentGameId = newGame.ParentGameId,
                 MaxUsersCount = newGame.MaxUsersCount,
                 GameType = newGame.GameType
@@ -226,10 +227,12 @@ namespace TamboliyaApi.Services
             GameDTO game = new()
             {
                 GameId = newGame.Id,
+                CreatorGuid = newGame.CreatorGuid,
                 Created = newGame.DateBeginning,
                 IsFinished = newGame.IsFinished,
                 GameType = newGame.GameType,
                 DateBeginning = newGame.DateBeginning,
+                DateEnding = newGame.DateEnding,
                 ActualPosition = new()
                 {
                     Description = newGame.ActualPosition.Description,

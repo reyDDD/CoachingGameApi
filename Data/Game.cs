@@ -28,7 +28,7 @@ namespace TamboliyaApi.Data
         public int? ParentGameId { get; set; }
 
         //TODO: set value when game's finished
-        public DateTime DateEnd { get; set; }
+        public DateTime DateEnding { get; set; }
 
         public IEnumerable<Game>? ChildsGames = new List<Game>();
 

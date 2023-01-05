@@ -16,7 +16,7 @@ namespace TamboliyaApi.GameLogic
 
         //TODO: new field (delete comment after functionality will be create
         public DateTime DateBeginning { get; set; }
-        public DateTime DateEnd { get; set; }
+        public DateTime DateEnding { get; set; }
         public int? ParentGameId { get; set; }
         public int MaxUsersCount { get; set; } = default(int);
         public GameType GameType { get; set; }
@@ -56,7 +56,8 @@ namespace TamboliyaApi.GameLogic
 			};
 			this.CreatorId = userId;
 			this.DateBeginning = newParentGame.DateBeginning;
-			this.ParentGameId = newParentGame.ParentGame;
+            this.DateEnding = newParentGame.DateEnding;
+            this.ParentGameId = newParentGame.ParentGame;
 			this.MaxUsersCount = newParentGame.MaxUsersCount;
 			this.GameType = newParentGame.GameType;
 
