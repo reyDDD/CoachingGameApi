@@ -13,22 +13,19 @@ namespace TamboliyaApi.GameLogic
 		public Oracle Oracle { get; init; }
 		public ActualPositionOnMap ActualPosition { get; set; } = null!;
 		public Guid CreatorId { get; set; }
-
-        //TODO: new field (delete comment after functionality will be create
         public DateTime DateBeginning { get; set; }
         public DateTime DateEnding { get; set; }
         public int? ParentGameId { get; set; }
         public int MaxUsersCount { get; set; } = default(int);
         public GameType GameType { get; set; }
-
-
         public List<ActualPositionOnMap> ActualPositionsForSelect { get; set; } = new();
-		public ProphecyCollectionService prophecyService;
+		
 
 
 		private readonly ChooseRandomActionService chooseRandomAction;
 		private readonly NewMoveService newMoveService;
 		private readonly LogService logService;
+		private ProphecyCollectionService prophecyService;
 		static object keyLock = new object();
 
 		public NewGame(Oracle oracle,
