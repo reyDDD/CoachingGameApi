@@ -24,7 +24,7 @@ namespace TamboliyaApi.Data
         [Range(1,6)]
         public int MaxUsersCount { get; set; } = default(int);
 
-        public Game? ParentGame { get; set; }
+        public virtual Game? ParentGame { get; set; }
         public int? ParentGameId { get; set; }
 
         public DateTime DateEnding { get; set; }

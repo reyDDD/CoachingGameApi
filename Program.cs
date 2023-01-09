@@ -54,7 +54,7 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-
+//TODO: время жизни кукисов на фронте и на бекенде не совпадает, на клиенте пользователь активен, но к апи запрос не проходит
 var jwtSecurityScheme = new OpenApiSecurityScheme
 {
     BearerFormat = "JWT",
