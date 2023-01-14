@@ -1,4 +1,5 @@
-﻿using TamboliyaApi.Data;
+﻿using AutoMapper;
+using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.Services;
 using TamboliyaLibrary.Models;
@@ -7,6 +8,7 @@ namespace TamboliyaApi.GameLogic
 {
 	public class NewMoveService
 	{
+		private readonly IMapper _mapper;
 		private readonly Dodecahedron dodecahedron;
 		private readonly PositionsOnMapService positionsOnMapService;
 		private const string finishMessage = "Почни гру з початку, з новим питанням";
@@ -14,16 +16,17 @@ namespace TamboliyaApi.GameLogic
 
 		private readonly LogService logService;
 
-		public NewMoveService(Dodecahedron dodecahedron, LogService logService, PositionsOnMapService positionsOnMapService)
+		public NewMoveService(Dodecahedron dodecahedron, LogService logService, PositionsOnMapService positionsOnMapService, IMapper mapper)
 		{
 			this.dodecahedron = dodecahedron;
 			this.logService = logService;
 			this.positionsOnMapService = positionsOnMapService;
+			this._mapper = mapper;
 		}
 
 		public async Task<ActualPositionOnMap> MakeMoveAsync(NewGame newGame, Game game)
 		{
-			ActualPositionOnMap actualPosition = game.ActualPosition.ActualPositionOnMapToDTO();
+			ActualPositionOnMap actualPosition = _mapper.Map<ActualPositionOnMap>(game.ActualPosition);
 
 			return actualPosition.RegionOnMap switch
 			{

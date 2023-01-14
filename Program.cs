@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,16 @@ builder.Services.AddAuthentication(auth =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Auto Mapper Configurations
+var mapperConfig = new MapperConfiguration(mc =>
+{
+	mc.AddProfile(new MappingProfile());
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
 
 //TODO: время жизни кукисов на фронте и на бекенде не совпадает, на клиенте пользователь активен, но к апи запрос не проходит
 var jwtSecurityScheme = new OpenApiSecurityScheme

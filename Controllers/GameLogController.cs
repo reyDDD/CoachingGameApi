@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TamboliyaApi.Data;
 using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
+using TamboliyaLibrary.Models;
 
 //TODO: використати для пеертворення моделей автомаппер
 namespace TamboliyaApi.Controllers
@@ -13,10 +15,12 @@ namespace TamboliyaApi.Controllers
     public class GameLogController : ControllerBase
     {
         private readonly UnitOfWork unitOfWork;
+        private readonly IMapper _mapper;
 
-        public GameLogController(UnitOfWork unitOfWork)
+        public GameLogController(UnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
 
@@ -31,21 +35,49 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<LogsDTOModel>> Info([FromQuery] int gameId)
+        public async Task<ActionResult<IEnumerable<string>>> Info([FromQuery] int gameId)
         {
             if (gameId == default(int))
                 return BadRequest("Input model isn't correct");
 
             var userId = await GetUserId();
 
-            var logs = await unitOfWork.GameChatLog.GetAsync(log => log.GameId == gameId && log.UserId == userId);
 
-            if (logs.Count() == 0)
+            Game? userGame = (await unitOfWork.GameRepository.GetAsync(game => game.Id == gameId && game.CreatorGuid == userId)).FirstOrDefault();
+
+            if (userGame == null)
+                return BadRequest("User game not found");
+
+            Game parentGame = null!;
+            if (userGame!.GameType == GameType.Parrent)
             {
-                return Ok(logs.GameLogsToLogsDTOModel(new GameUserDTO() { GameId = gameId, UserId = userId }));
+                parentGame = userGame;
+            }
+            else
+            {
+                parentGame = (await unitOfWork.GameRepository.GetAsync(game => game.Id == userGame.ParentGameId)).FirstOrDefault();
             }
 
-            return Ok(logs.GameLogsToLogsDTOModel(new GameUserDTO() { GameId = gameId, UserId = userId }));
+            IEnumerable<Game> childGames = await unitOfWork.GameRepository.GetAsync(game => game.ParentGameId == parentGame.Id);
+
+            IEnumerable<GameChatLog> logLines;
+
+            if (childGames?.Count() != 0)
+            {
+
+                logLines = await unitOfWork.GameChatLog.GetAsync(filter: log => childGames.Select(x => x.Id).Contains(log.GameId) || log.GameId == parentGame.Id);
+            }
+            else
+            {
+                logLines = await unitOfWork.GameChatLog.GetAsync(filter: log => parentGame.Id == log.GameId);
+            }
+
+            if (logLines.Count() == 0)
+            {
+                return Ok(new List<string>());
+            }
+
+            return Ok(logLines.Select(mess => mess.Message));
         }
 
 
@@ -71,11 +103,11 @@ namespace TamboliyaApi.Controllers
             {
                 return NotFound();
             }
-
-            return Ok(logLine.FirstOrDefault()?.GameChatLogToGameChatLogDTO());
+            var logLineDTOModel = _mapper.Map<GameChatLogDTO>(logLine.First());
+            return Ok(logLineDTOModel);
         }
 
-
+        //TODO: this controller cannot used. Why?
         /// <summary>
         /// Save game's log
         /// </summary>
@@ -90,21 +122,34 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<LogsDTOModel>> Save([FromBody] LogsDTOModel logsOfGame)
         {
+            var userId = await GetUserId();
+
+            if (logsOfGame.GameId == default(int))
+            {
+                ModelState.AddModelError("GameId", "Input parameter GameId is't valid");
+            }
+            if (logsOfGame!.UserId != userId)
+            {
+                ModelState.AddModelError("UserId", "User cannot access to selected game");
+            }
             if (!ModelState.IsValid)
                 return BadRequest("Input model isn't correct");
 
-            foreach (var item in logsOfGame.Messages)
+
+            var game = await unitOfWork.GameRepository.GetByIDAsync(game => game.Id == logsOfGame.GameId && game.CreatorGuid == userId);
+            if (game == null)
+                return BadRequest("Game not found");
+
+            unitOfWork.GameChatLog.Insert(new GameChatLog
             {
-                unitOfWork.GameChatLog.Insert(new GameChatLog
-                {
-                    Game = (await unitOfWork.GameRepository.GetByIDAsync(game => game!.Id == logsOfGame!.GameId))!,
-                    UserId = logsOfGame.UserId,
-                    Message = item
-                });
-            }
+                Game = game,
+                UserId = logsOfGame.UserId,
+                Message = logsOfGame.Message
+            });
+
             await unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(Info), new { gameId = logsOfGame.GameId, userId = logsOfGame.UserId }, logsOfGame);
+            return CreatedAtAction(nameof(Info), new { gameId = logsOfGame.GameId }, logsOfGame);
         }
 
 
@@ -120,24 +165,35 @@ namespace TamboliyaApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> AddMessageToLog([FromBody] LogLineDTOModel logLine)
         {
-            if (logLine.GameId == default(int)) {
+            var userId = await GetUserId();
+
+            if (String.IsNullOrEmpty(logLine!.Message))
+            {
+                ModelState.AddModelError("Message", "Message is null or empty");
+            }
+            if (logLine.GameId == default(int))
+            {
                 ModelState.AddModelError("GameId", "Input parameter GameId is't valid");
             }
             if (!ModelState.IsValid)
                 return BadRequest("Input model isn't correct");
 
-            var userId = await GetUserId();
+
+            var game = await unitOfWork.GameRepository.GetByIDAsync(game => game.Id == logLine.GameId && game.CreatorGuid == userId);
+            if (game == null)
+                return BadRequest("Game not found");
 
             var newLogLine = new GameChatLog
             {
-                Game = (await unitOfWork.GameRepository.GetByIDAsync(game => game.Id == logLine.GameId && game!.CreatorGuid == userId))!,
+                Game = game,
                 UserId = userId,
                 Message = logLine.Message
             };
             unitOfWork.GameChatLog.Insert(newLogLine);
             await unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(GetGamesLogLine), newLogLine.Id, newLogLine.GameChatLogToGameChatLogDTO());
+            var logLineDTOModel = _mapper.Map<GameChatLogDTO>(newLogLine);
+            return CreatedAtAction(nameof(GetGamesLogLine), newLogLine.Id, logLineDTOModel);
         }
 
         private async Task<Guid> GetUserId()

@@ -9,7 +9,7 @@ namespace TamboliyaApi.GameLogic
 	{
 		private readonly Dodecahedron dodecahedron;
 
-		public int GameId { get; set; }
+		
 		public string Question { get; private set; } = null!;
 		public string Motive { get; private set; } = null!;
 		public string QualityOfExperience { get; private set; } = null!;
@@ -19,13 +19,19 @@ namespace TamboliyaApi.GameLogic
 		public int StepOnPath { get; private set; }
 		public RegionOnMap RegionOnMap { get; private set; }
 
+        public int GameId { get; set; }
 
-		public Oracle(Dodecahedron dodecahedron)
+        public Oracle(Dodecahedron dodecahedron)
 		{
 			this.dodecahedron = dodecahedron;
 		}
 
-		public async Task Start(string question)
+        public void UserQuestion(string question)
+        {
+            Question = question;
+        }
+
+        public async Task Start(string question)
 		{
 			UserQuestion(question);
 
@@ -68,10 +74,7 @@ namespace TamboliyaApi.GameLogic
 			return await Task.FromResult(position);
 		}
 
-		public void UserQuestion(string question)
-		{
-			Question = question;
-		}
+		
 
 		private async Task<(string, Color)> StepWithColor(string pathToValues)
 		{
