@@ -6,7 +6,7 @@ using TamboliyaApi.Services;
 using TamboliyaLibrary.DAL;
 using TamboliyaLibrary.Models;
 
-//TODO: використати для пеертворення моделей автомаппер
+
 namespace TamboliyaApi.Controllers
 {
     [Authorize(Roles = "User")]

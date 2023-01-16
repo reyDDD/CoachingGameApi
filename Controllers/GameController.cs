@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
@@ -75,7 +77,6 @@ namespace TamboliyaApi.Controllers
 			}
 
 			var game = await this.newGame.GetOracle(newGame, userGuid);
-			//TODO 0 избавиться от каста, использовать маппер
 			var gameCasted = _mapper.Map<Game>(game);
 			unitOfWork.GameRepository.Insert(gameCasted);
 			await logService.AddOracle(gameCasted, this.newGame);
@@ -149,17 +150,26 @@ namespace TamboliyaApi.Controllers
 		[Produces("application/json")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<IEnumerable<GameDTO>>> GetLastGamesToJoin()
+		public async Task<ActionResult<IEnumerable<GameDTO>>> GetLastGamesToJoin(string dateBeginning, string dateEnding, int? offset)
 		{
-			//TODO 2 додати у вхідні параметри фільтри по даті - від якої і до якої
-			var userGuid = await GetUserId();
-			//TODO: використовувати фільтр з поправкою на те, що дату треба привести в часовий пояс користувача, і тільки потом робити вибірку з бази данних
+			if (String.IsNullOrEmpty(dateBeginning) && String.IsNullOrEmpty(dateEnding) && !offset.HasValue) {
+				return BadRequest("One or few input parameters isn't valid");
+			}
+
+			DateTime _dateBeginning = DateTime.Parse(dateBeginning, CultureInfo.InvariantCulture);
+            DateTime _dateEnding = DateTime.Parse(dateEnding, CultureInfo.InvariantCulture);
+
+            var startDate = GameExtensions.ConverLocalDateToDateOffset(_dateBeginning, offset!.Value);
+            var endDate = GameExtensions.ConverLocalDateToDateOffset(_dateEnding, offset!.Value);
+
+            var userGuid = await GetUserId();
 			var parentUserGames = (await unitOfWork.GameRepository
 				.GetAsync(
 				filter: u => u.CreatorGuid != userGuid &&
 				u.IsFinished != true &&
-				u.DateBeginning > DateTime.UtcNow &&
-				u.GameType == GameType.Parrent,
+				u.DateBeginning >= startDate &&
+                u.DateEnding <= endDate &&
+                u.GameType == GameType.Parrent,
 
 				includeProperties: "ActualPosition,InitialGameData",
 				orderBy: x => x.OrderBy(x => x.DateBeginning)))
@@ -176,7 +186,7 @@ namespace TamboliyaApi.Controllers
 				.GetAsync(
 				filter: u => u.CreatorGuid == userGuid &&
 				u.GameType == GameType.Child &&
-				parentUserGames!.Contains(u.ParentGame),
+                u.ParentGame != null && parentUserGames!.Contains(u.ParentGame),
 
 				includeProperties: "ParentGame"))
 				.ToList();
@@ -188,7 +198,7 @@ namespace TamboliyaApi.Controllers
 			}
 
 			if (parentUserGames.Count() == 0)
-				return new BadRequestObjectResult("User games not found");
+				return BadRequest("User games not found");
 
 			var gameDTO = parentUserGames!.Select(x => _mapper.Map<GameDTO>(x!));
 			return Ok(gameDTO);
@@ -330,22 +340,22 @@ namespace TamboliyaApi.Controllers
 		}
 
 
-		/// <summary>
-		/// Endpoint to end the game at the player's request
-		/// </summary>
-		/// <param name="gameId">Game id</param>
-		/// <returns>Success status code if all is good</returns>
-		[HttpPost]
+        /// <summary>
+        /// Endpoint to end the game at the player's request
+        /// </summary>
+        /// <param name="endingGame">Id game end offset</param>
+        /// <returns>Success status code if all is good</returns>
+        [HttpPost]
 		[Route("finish")]
 		[Produces("application/json")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<string>> FinishTheGame([FromBody] int gameId)
+		public async Task<ActionResult<string>> FinishTheGame([FromBody] EndGameDTO endingGame)
 		{
 			var userGuid = await GetUserId();
 
 			var game = await unitOfWork.GameRepository
-				.GetByIDAsync(game => game.Id == gameId && game.CreatorGuid == userGuid,
+				.GetByIDAsync(game => game.Id == endingGame.GameId && game.CreatorGuid == userGuid,
 				includeProperties: "ActualPosition,InitialGameData,ChildsGames");
 			if (game == null) return BadRequest("Game not found");
 			if (game.IsFinished) return BadRequest("The game has already been completed");
@@ -353,15 +363,12 @@ namespace TamboliyaApi.Controllers
 			await newGame.EndOfTheGame(game);
 
 			game.IsFinished = true;
-			//TODO: привести час до єдиного стандарту - перетворювати на єдиний стандарт для користувачів з різними часовими поясами
-			game.DateEnding = DateTime.UtcNow;
 
 			foreach (var childsGame in game?.ChildsGames!)
 			{
 				if (!childsGame.IsFinished)
 				{
 					childsGame!.IsFinished = true;
-					childsGame!.DateEnding = DateTime.UtcNow;
 				}
 			}
 

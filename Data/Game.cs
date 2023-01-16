@@ -10,7 +10,9 @@ namespace TamboliyaApi.Data
         public int Id { get; set; }
 
         [Required]
-        public DateTime DateBeginning { get; set; }
+        public DateTimeOffset DateBeginning { get; set; }
+
+        public DateTimeOffset DateEnding { get; set; }
 
         [Required]
         public Guid CreatorGuid { get; set; } = new Guid();
@@ -27,12 +29,7 @@ namespace TamboliyaApi.Data
         public virtual Game? ParentGame { get; set; }
         public int? ParentGameId { get; set; }
 
-        public DateTime DateEnding { get; set; }
-
         public IEnumerable<Game>? ChildsGames = new List<Game>();
-
-
-
 
 
         public bool CompareBaseFiedls(ActualPositionOnMap positionAtBase)

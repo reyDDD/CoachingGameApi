@@ -11,8 +11,8 @@ namespace TamboliyaApi.Services
         public MappingProfile()
         {
             CreateMap<InitialGameData, OracleDTO>()
-                .ForMember(u => u.PathToImage, opt => opt.MapFrom(x => ModelsCast.GetPath(x.RegionOnMap, x.StepOnPath)))
-                .ForMember(u => u.Coordinates, opt => opt.MapFrom(x => ModelsCast.GetCoordinates(x.RegionOnMap, x.StepOnPath)));
+                .ForMember(u => u.PathToImage, opt => opt.MapFrom(x => GameExtensions.GetPath(x.RegionOnMap, x.StepOnPath)))
+                .ForMember(u => u.Coordinates, opt => opt.MapFrom(x => GameExtensions.GetCoordinates(x.RegionOnMap, x.StepOnPath)));
 
             CreateMap<ActualPositionOnMap, ActualPositionOnTheMap>();
             CreateMap<ActualPositionOnTheMap, ActualPositionOnMap>();
@@ -37,8 +37,8 @@ namespace TamboliyaApi.Services
                 .ForMember(u => u.Created, opt => opt.MapFrom(x => x.DateBeginning))
                 .ForMember(u => u.ActualPosition, opt => opt.MapFrom(x => x.ActualPosition))
                 .ForMember(u => u.Oracle, opt => opt.MapFrom(x => x.InitialGameData))
-                .ForMember(u => u.PathToImage, opt => opt.MapFrom(x => ModelsCast.GetPath(x.ActualPosition.RegionOnMap, x.ActualPosition.PositionNumber)))
-                .ForMember(u => u.Coordinates, opt => opt.MapFrom(x => ModelsCast.GetCoordinates(x.ActualPosition.RegionOnMap, x.ActualPosition.PositionNumber)));
+                .ForMember(u => u.PathToImage, opt => opt.MapFrom(x => GameExtensions.GetPath(x.ActualPosition.RegionOnMap, x.ActualPosition.PositionNumber)))
+                .ForMember(u => u.Coordinates, opt => opt.MapFrom(x => GameExtensions.GetCoordinates(x.ActualPosition.RegionOnMap, x.ActualPosition.PositionNumber)));
 
         }
     }

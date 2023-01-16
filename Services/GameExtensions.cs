@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
 using TamboliyaApi.Data;
 using TamboliyaApi.GameLogic;
 using TamboliyaLibrary.DAL;
@@ -6,7 +7,7 @@ using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Services
 {
-	public static class ModelsCast
+	public static class GameExtensions
 	{
 		private static string prefixImages = "images/";
 
@@ -161,41 +162,31 @@ namespace TamboliyaApi.Services
 		}
 
 
+		public static DateTimeOffset ConverLocalDateToDateOffset(DateTime dateTime, int timezoneOffset)
+		{
+			if (dateTime == default) {
+				throw new ArgumentException("DateTime is not valid");
+			}
 
-		//public static Game NewGameToGame(this NewGame newGame)
-		//{
-		//	InitialGameData oracle = new()
-		//	{
-		//		Question = newGame.Oracle.Question,
-		//		Motive = newGame.Oracle.Motive,
-		//		QualityOfExperience = newGame.Oracle.QualityOfExperience,
-		//		EnvironmentAndCircumstances = newGame.Oracle.EnvironmentAndCircumstances,
-		//		ChainLinks = newGame.Oracle.ChainLinks,
-		//		ExitPath = newGame.Oracle.ExitPath,
-		//		StepOnPath = newGame.Oracle.StepOnPath,
-		//		RegionOnMap = newGame.Oracle.RegionOnMap,
+            DateTime newDate = dateTime + new TimeSpan(timezoneOffset / 60, timezoneOffset % 60, 0);
 
-		//	};
+            DateTimeOffset utcTime = DateTime.SpecifyKind(newDate, DateTimeKind.Utc);
 
-		//	Game game = new()
-		//	{
-		//		InitialGameData = oracle,
-		//		IsFinished = false,
-		//		ActualPosition = new()
-		//		{
-		//			Description = newGame.ActualPosition.Description,
-		//			PositionNumber = newGame.ActualPosition.PositionNumber,
-		//			RegionOnMap = newGame.ActualPosition.RegionOnMap
-		//		},
-		//		CreatorGuid = newGame.CreatorId,
-		//		DateBeginning = newGame.DateBeginning,
-		//		DateEnding = newGame.DateEnding,
-		//		ParentGameId = newGame.ParentGameId,
-		//		MaxUsersCount = newGame.MaxUsersCount,
-		//		GameType = newGame.GameType
-		//	};
-		//	return game;
-		//}
+            return utcTime;
+        }
 
-	}
+        public static DateTimeOffset ConverDateOffsetToLocalDate(DateTime dateTime, int timezoneOffset)
+        {
+            if (dateTime == default)
+            {
+                throw new ArgumentException("DateTime is not valid");
+            }
+
+            DateTime newDate = dateTime - new TimeSpan(timezoneOffset / 60, timezoneOffset % 60, 0);
+
+            DateTimeOffset userTime = DateTime.SpecifyKind(newDate, DateTimeKind.Utc);
+
+            return userTime;
+        }
+    }
 }
