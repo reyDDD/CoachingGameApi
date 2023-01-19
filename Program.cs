@@ -65,7 +65,6 @@ IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 
-//TODO: время жизни кукисов на фронте и на бекенде не совпадает, на клиенте пользователь активен, но к апи запрос не проходит
 var jwtSecurityScheme = new OpenApiSecurityScheme
 {
     BearerFormat = "JWT",
