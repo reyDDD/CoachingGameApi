@@ -368,7 +368,6 @@ namespace TamboliyaApi.Controllers
             game.IsFinished = true;
             unitOfWork.GameRepository.Update(game);
 
-            //TODO: не удается завершить игру, получаю ошибку!!!! Списка дочерних игр не существует
             if (game.GameType == GameType.Parrent)
             {
                 foreach (var childsGame in childsGames)

@@ -1,7 +1,6 @@
 using TamboliyaApi.GameLogic.Models;
 using TamboliyaApi.GameLogic;
 using TamboliyaApi.Services;
-using TamboliyaApi.Hubs;
 using TamboliyaApi.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -93,7 +92,7 @@ builder.Services.AddSwaggerGen(swagger =>
 });
 
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddSignalR();
+
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
@@ -144,6 +143,5 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
-app.MapHub<ChatHub>("/chathub");
 app.MapDefaultControllerRoute();
 app.Run();
