@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
+using TamboliyaLibrary.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,8 +124,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+string clientAdditionalUrl = builder.Configuration[SolutionPathes.ClientAdditionalUrl]!;
 app.UseCors(policy =>
-    policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7147", "https://localhost:7112")
+    policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7112","https://localhost:7147", clientAdditionalUrl)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()

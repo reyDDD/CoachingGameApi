@@ -442,6 +442,40 @@ namespace TamboliyaApi.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Get parent game Id
+        /// </summary>
+        /// <param name="gameId">Game ID</param>
+        /// <returns>Parent game Id</returns>
+        [HttpGet]
+        [Route("parentGameId/{gameId}")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<int>> ParentGameId(int gameId)
+        {
+            if (gameId == default)
+            {
+                return BadRequest($"Game id not get");
+            }
+
+            var userGuid = await GetUserId();
+            var userGame = (await unitOfWork.GameRepository.GetAsync(game => game.Id == gameId && game.CreatorGuid == userGuid)).FirstOrDefault();
+
+            if (userGame != default)
+            {
+                if (userGame.GameType == GameType.Parrent)
+                    return Ok(userGame.Id);
+                else if (userGame.GameType == GameType.Child)
+                {
+                    return Ok(userGame.ParentGameId);
+                }
+            }
+            return BadRequest($"Game with id {gameId} not found");
+        }
+
+
         private async Task<Guid> GetUserId()
         {
             var userMail = User!.Identity!.Name;
