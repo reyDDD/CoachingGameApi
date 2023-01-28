@@ -126,7 +126,7 @@ if (app.Environment.IsDevelopment())
 
 string clientAdditionalUrl = builder.Configuration[SolutionPathes.ClientAdditionalUrl]!;
 app.UseCors(policy =>
-    policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7112","https://localhost:7147", clientAdditionalUrl)
+    policy.WithOrigins("http://localhost:5000", "https://localhost:5001", "https://localhost:7112","https://localhost:7148", clientAdditionalUrl)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()
