@@ -31,7 +31,8 @@ namespace TamboliyaApi.Controllers
             var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, false);
 
             if (!result.Succeeded) 
-                return BadRequest(new LoginResult { Successful = false, Error = "Username or/and password are invalid." });
+                return BadRequest(new LoginResult { Successful = false, Error = "Username or/and password are invalid." }); //TODO: на странице входа на блейзоре не отображается ошибка, если логин введен 
+            //неправильно.  Нужно включить прием сообщение об ошибке и отображения на странице
 
             var user = await _signInManager.UserManager.FindByEmailAsync(login.Email);
             var roles = await _signInManager.UserManager.GetRolesAsync(user!);

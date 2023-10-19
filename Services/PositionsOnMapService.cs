@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using TamboliyaApi.GameLogic;
+using TamboliyaApi.GameLogic.Models;
 using TamboliyaLibrary.Models;
 
 namespace TamboliyaApi.Services
@@ -50,6 +51,14 @@ namespace TamboliyaApi.Services
 			var textMessage = description.AsSpan()[separatorIndex..(description.Length - 1)].ToString();
 
 			return textMessage;
-		}
+
+
+            //TODO: ошибка при броске кости, когда игрок находится в зоне личностного пути. Нет названия новой позиции на земле ясности, а описание обрезано. Пример лога:
+//            Позиція на шляху LandOfClarity -Почти никогда вашим партнером не будет другой человек.Чаще это причина, по которой Вам нужны другие люди, или по которой вы отвергаете и
+//Подія на шляху PersonalPath - Гравець зробив новий хід.Зона на карті NotSet, номер нової позиції - , спосіб пересування -RandomAction
+//Позиція на шляху - Возвращение.Место, откуда вы пришли, все еще там и будет там, когда вы закончите свое приключение здесь
+//Шлях входу - Личностный путь.Путь вашего личностного роста, развития
+
+        }
 	}
 }
